@@ -3,6 +3,7 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.objects.ObjectUtils;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -73,8 +74,8 @@ public class CommandSay extends Command {
                 sendMessage(e.getGuild().getTextChannelById(receiver), input);
             } else if(e.getJDA().getUserById(receiver) != null) {
                 sendMessage(e.getJDA().getUserById(receiver), input);
-            } else if(e.getJDA().getUsersByName(receiver, true).size() > 0) {
-                sendMessage(e.getJDA().getUsersByName(receiver, true), input);
+            } else if(e.getGuild().getMembersByName(receiver, true).size() > 0) {
+                sendMessage(e.getGuild().getMembersByName(receiver, true), input);
             }
             else {
                 e.getChannel().sendMessage(input).queue();
@@ -95,8 +96,8 @@ public class CommandSay extends Command {
         textChannel.sendMessage(input).queue();
     }
 
-    private void sendMessage(List<User> users, final String input) {
-        users.forEach(user -> sendMessage(user, input));
+    private void sendMessage(List<Member> users, final String input) {
+        users.forEach(user -> sendMessage(user.getUser(), input));
     }
 
 }
