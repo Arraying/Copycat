@@ -65,7 +65,7 @@ public class CommandSay extends Command {
             }
             if(input.isEmpty()
                     || input.equalsIgnoreCase(" ")) {
-                e.getChannel().sendMessage("The message is empty").queue();
+                e.getChannel().sendMessage("The message is empty, add some kittens to it, please.").queue();
                 return;
             }
             input = utils.stripFormatting(input);
