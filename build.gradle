@@ -9,7 +9,7 @@ plugins {
 group 'Copycat'
 version '1'
 apply plugin: 'java'
-mainClassName = 'de.arraying.Copycat.main'
+mainClassName = 'de.arraying.Copycat.Main'
 version '1.0'
 sourceCompatibility = 1.8
 repositories {
