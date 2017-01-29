@@ -17,6 +17,8 @@ public class CommandStats extends Command {
 
     public CommandStats() {
         super("stats", "Shows my statistics.", Permission.MESSAGE_WRITE, "stats", false);
+        getAliases().add("statistics");
+        getAliases().add("info");
         copycat = Copycat.getInstance();
         embedBuilder = ObjectUtils.getInstance().getCopycatBuilder();
         embedBuilder.setDescription("Here are the statistics for Copycat.\n"+
@@ -28,10 +30,10 @@ public class CommandStats extends Command {
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
         long memoryUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         String memory = FileUtils.byteCountToDisplaySize(memoryUsage);
-        embedBuilder.setFieldValue("I am meowing alongside...", "..."+e.getJDA().getGuilds().size()+" guilds.\n"+
+        embedBuilder.setFieldValue("I am meowing alongside...", "... "+e.getJDA().getGuilds().size()+" guilds.\n"+
                 "... "+e.getJDA().getUsers().size()+" users.\n"+
                 "... "+(e.getJDA().getVoiceChannels().size()+e.getJDA().getTextChannels().size())+" channels.\n"+
-                "... "+memory+" memory used."+
+                "... "+memory+" memory used.\n"+
                 "... a lot of friends.");
         e.getChannel().sendMessage(embedBuilder.build()).queue();
     }

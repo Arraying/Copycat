@@ -41,14 +41,16 @@ public class CommandSay extends Command {
             }
             if(input.contains("-pmn")) {
                 String value = utils.getParameterValue(input, "-pmn");
-                if(!value.equalsIgnoreCase("")) {
+                if(!value.equalsIgnoreCase("")
+                        && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
                     receiver = value;
                 }
                 input = input.replace("-pmn "+value, "");
             }
             if(input.contains("-pmid")) {
                 String value = utils.getParameterValue(input, "-pmid");
-                if(!value.equalsIgnoreCase("")) {
+                if(!value.equalsIgnoreCase("")
+                        && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
                     receiver = value;
                 }
                 input = input.replace("-pmid "+value, "");
@@ -56,6 +58,7 @@ public class CommandSay extends Command {
             if(input.contains("-pm")) {
                 String value = utils.getParameterValue(input, "-pm");
                 if(!value.equalsIgnoreCase("")
+                        && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)
                         && value.startsWith("<")
                         && value.endsWith(">")
                         && value.indexOf("@") == 1) {
