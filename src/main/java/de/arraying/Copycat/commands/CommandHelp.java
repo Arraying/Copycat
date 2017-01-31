@@ -32,10 +32,11 @@ public class CommandHelp extends Command {
         embedBuilder.addField("Usage", "You can do '{prefix}help <command>' for information. \n"+
                 "A list of commands is below.", false);
         embedBuilder.addField("Commands", "{commands}", false);
-        embedBuilder.addField("Information", "- Developed by [{author}](http://arraying.de)\n"+
+        embedBuilder.addField("Information", "- Developed by [{author}](http://arraying.de) in Java using [JDA](https://github.com/DV8FromTheWorld/JDA).\n"+
                 "- My code can be found [here](https://github.com/Wiildanimal/Copycat)\n"+
                 "- You can invite me [here](https://discordapp.com/oauth2/authorize?client_id=273121537132068884&scope=bot&permissions=27648)\n"+
                 "- Help can be found [here](http://guild.arraybot.xyz).", false);
+        embedBuilder.setFooter("Thank you to DinosParkour and Carbonitex.", null);
         commandBuilder = utils.getCopycatBuilder();
         commandBuilder.setDescription("Here is information for the command.");
         commandBuilder.addField("Name", "An error occurred.", false);

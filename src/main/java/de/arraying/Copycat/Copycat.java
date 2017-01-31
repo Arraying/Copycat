@@ -44,18 +44,22 @@ public class Copycat {
         logger = SimpleLog.getLog("Copycat");
         logger.log(SimpleLog.Level.INFO, "Copycat is now starting.");
         String botToken = "none";
+        String botBetaToken = "none";
         String botAuthor = "115134128717955080";
         String botPrefix = "copycat ";
         String botVersion = "1.0.0";
+        boolean botBeta = true;
         File configFile = new File("config.json");
         if(!configFile.exists()) {
             try {
                 if(configFile.createNewFile()) {
                     String jsonString = "{\n"+
                             "\t\"botToken\":\""+botToken+"\",\n"+
+                            "\t\"botBetaToken\":\""+botBetaToken+"\",\n"+
                             "\t\"botAuthor\":\""+botAuthor+"\",\n"+
                             "\t\"botPrefix\":\""+botPrefix+"\",\n"+
-                            "\t\"botVersion\":\""+botVersion+"\"\n"+
+                            "\t\"botVersion\":\""+botVersion+"\",\n"+
+                            "\t\"botBeta\":"+botBeta+"\n"+
                             "}";
                     BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile));
                     bufferedWriter.write(jsonString);
@@ -76,16 +80,18 @@ public class Copycat {
                 Object json = jsonParser.parse(new FileReader(configFile));
                 JSONObject jsonObject = (JSONObject) json;
                 botToken = (String) jsonObject.get("botToken");
+                botBetaToken = (String) jsonObject.get("botBetaToken");
                 botAuthor = (String) jsonObject.get("botAuthor");
                 botPrefix = (String) jsonObject.get("botPrefix");
                 botVersion = (String) jsonObject.get("botVersion");
-                config = new ObjectConfig(botToken, botAuthor, botPrefix, botVersion);
+                botBeta = (boolean) jsonObject.get("botBeta");
+                config = new ObjectConfig(botToken, botBetaToken, botAuthor, botPrefix, botVersion, botBeta);
             } catch(IOException | ParseException e) {
                 logger.log(SimpleLog.Level.FATAL, "Could not parse config.json, shutting down.");
             }
         }
         commands = new TreeMap<>();
-        Reflections reflections = new Reflections("de.arraying.Copycat");
+        Reflections reflections = new Reflections("de.arraying.Copycat.commands");
         reflections.getSubTypesOf(Command.class).forEach(subclass -> {
             try {
                 Command command = subclass.newInstance();
@@ -98,9 +104,9 @@ public class Copycat {
         logger.log(SimpleLog.Level.INFO, "Loaded everything, it took "+(System.currentTimeMillis()-timeBegin)+" milliseconds. Starting JDA now.");
         try {
              jda = new JDABuilder(AccountType.BOT)
-                    .setToken(botToken)
+                    .setToken(botBeta ? botBetaToken : botToken)
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                    .setGame(Game.of(botPrefix+"help || "+botVersion, "https://twitch.tv/ "))
+                    .setGame(Game.of(botPrefix+"help || "+botVersion))
                     .addListener(new ListenerChat())
                     .buildBlocking();
         } catch(LoginException | InterruptedException | RateLimitedException e) {
