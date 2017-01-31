@@ -79,24 +79,24 @@ public class CommandSay extends Command {
                     receiver = value;
                 }
                 input = input.replace("-pmid "+value, "");
-            } else if(input.contains("-pmm")) {
+            }
+            else if(input.contains("-pm")) {
                 if(!e.getMessage().getMentionedUsers().isEmpty()
                         && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
                     multiple = true;
                     e.getMessage().getMentionedUsers().forEach(user -> receivers.add(e.getGuild().getMember(user)));
                 }
-                input = input.replace("-pmm", "");
-                for(Member mentioned : receivers) {
-                    input = input.replace(mentioned.getAsMention(), "");
-                }
-            } else if(input.contains("-pm")) {
-                if(!e.getMessage().getMentionedUsers().isEmpty()
-                        && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-                    receiver = e.getMessage().getMentionedUsers().get(0).getId();
-                }
                 input = input.replace("-pm", "");
-                input = input.replace("<@"+receiver+">", "");
+                for(User user : e.getMessage().getMentionedUsers()) {
+                    Member member = e.getGuild().getMember(user);
+                    if(member.getNickname() != null) {
+                        input = input.replace("<@!"+user.getId()+">", "");
+                    } else {
+                        input = input.replace("<@"+user.getId()+">", "");
+                    }
+                }
             }
+            input = input.trim();
             if(input.isEmpty()
                     || input.equalsIgnoreCase(" ")) {
                 e.getChannel().sendMessage("The message is empty, add some kittens to it, please.").queue();

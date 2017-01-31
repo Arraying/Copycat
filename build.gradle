@@ -7,10 +7,9 @@ plugins {
     id'com.github.johnrengelman.shadow' version '1.2.4'
 }
 group 'Copycat'
-version '1'
+version '1.1.0'
 apply plugin: 'java'
 mainClassName = 'de.arraying.Copycat.Main'
-version '1.0'
 sourceCompatibility = 1.8
 repositories {
     jcenter()
