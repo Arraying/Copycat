@@ -117,13 +117,15 @@ public class CommandSay extends Command {
                 String[] randomParts = input.split(";");
                 input = randomParts[randomObject.nextInt(randomParts.length)];
             }
-            input = utils.stripFormatting(input);
             if(channelReceivers.isEmpty()
                     && userReceivers.isEmpty()) {
+                if(!PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
+                    input = utils.stripFormatting(input);
+                }
                 e.getChannel().sendMessage(input).queue();
             } else {
-                sendMessageChannel(channelReceivers, e.getGuild(), input);
-                sendMessageMember(userReceivers, e.getGuild(), input);
+                sendMessageChannel(channelReceivers, e.getGuild(), e.getAuthor(), input);
+                sendMessageMember(userReceivers, e.getGuild(), e.getAuthor(), input);
             }
             if(!silent) {
                 e.getChannel().sendMessage("I have sent that message.").queue();
@@ -133,14 +135,23 @@ public class CommandSay extends Command {
         }
     }
 
-    private void sendMessageMember(List<String> users, Guild guild, final String input) {
+    private void sendMessageMember(List<String> users, Guild guild, User sender, String input) {
         users.forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(channel ->
-                channel.sendMessage(input).queue()));
+                channel.sendMessage(input+"\n\nSent from \""+guild.getName()+"\" by "+sender.getName()+"#"+sender.getDiscriminator()+".").queue()));
     }
 
-    private void sendMessageChannel(List<String> channels, Guild guild, final String input) {
-        channels.forEach(channelid -> guild.getJDA().getTextChannelById(channelid)
-                .sendMessage(input).queue());
+    private void sendMessageChannel(List<String> channels, Guild guild, User sender, String input) {
+        channels.forEach(channelid -> {
+            TextChannel textChannel = guild.getJDA().getTextChannelById(channelid);
+            String finalInput;
+            if(!PermissionUtil.checkPermission(textChannel, guild.getMember(sender), Permission.MESSAGE_MENTION_EVERYONE)) {
+                finalInput = utils.stripFormatting(input);
+            } else {
+                finalInput = input;
+            }
+            textChannel.sendMessage(finalInput).queue();
+        });
+
     }
 
 }

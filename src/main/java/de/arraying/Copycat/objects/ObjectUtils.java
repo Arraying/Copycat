@@ -55,12 +55,7 @@ public class ObjectUtils {
      * @return A string without formatting.
      */
     public String stripFormatting(String string) {
-        return string.replace("*", "\\*")
-                .replace("`", "\\`")
-                .replace("_", "\\_")
-                .replace("~~", "\\~\\~")
-                .replace(">", "\\>")
-                .replace("@", "@\u180E");
+        return string.replace("@here", "@\u180Ehere").replace("@everyone", "@\u180Eeveryone");
     }
 
 }
