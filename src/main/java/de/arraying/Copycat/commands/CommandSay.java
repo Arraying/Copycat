@@ -3,6 +3,7 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.objects.ObjectUtils;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -17,24 +18,24 @@ public class CommandSay extends Command {
 
     private Copycat copycat;
     private ObjectUtils utils;
+    private Random randomObject;
 
     public CommandSay() {
         super("say", "My main feature. For more information, check my docs.", Permission.MESSAGE_WRITE, "say <input>", false);
         copycat = Copycat.getInstance();
         utils = ObjectUtils.getInstance();
+        randomObject = new Random();
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
         if(args.length > 1) {
-            long before = System.currentTimeMillis();
             String input = e.getMessage().getRawContent().substring(copycat.getConfig().getBotPrefix().length());
             input = input.substring(input.indexOf(" "));
-            String receiver = "nutin";
-            List<Member> userReceivers = new ArrayList<>();
-            List<TextChannel> channelReceivers = new ArrayList<>();
-            Random randomObject = new Random();
-            boolean silent = false, multiple = false, random = false;
+            boolean silent = false;
+            boolean random = false;
+            ArrayList<String> userReceivers = new ArrayList<>();
+            ArrayList<String> channelReceivers = new ArrayList<>();
             if(input.contains("-d")) {
                 input = input.replace("-d", "");
                 if(PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_MANAGE)) {
@@ -54,17 +55,19 @@ public class CommandSay extends Command {
                 if(!value.equalsIgnoreCase("")) {
                     TextChannel textChannel = e.getGuild().getTextChannelById(value);
                     if(textChannel != null
-                            && PermissionUtil.checkPermission(textChannel, e.getMember(), Permission.MESSAGE_WRITE)) {
-                        receiver = value;
+                            && PermissionUtil.checkPermission(textChannel, e.getMember(), Permission.MESSAGE_WRITE)
+                            && !channelReceivers.contains(textChannel.getId())) {
+                        channelReceivers.add(textChannel.getId());
                     }
                 }
                 input = input.replace("-cid "+value, "");
-            } else if(input.contains("-c")) {
+            }
+            if(input.contains("-c")) {
                 if(!e.getMessage().getMentionedChannels().isEmpty()) {
-                    multiple = true;
                     e.getMessage().getMentionedChannels().forEach(channel -> {
-                        if(PermissionUtil.checkPermission(channel, e.getMember(), Permission.MESSAGE_WRITE)) {
-                            channelReceivers.add(channel);
+                        if(PermissionUtil.checkPermission(channel, e.getMember(), Permission.MESSAGE_WRITE)
+                                && !channelReceivers.contains(channel.getId())) {
+                            channelReceivers.add(channel.getId());
                         }
                     });
                 }
@@ -73,27 +76,26 @@ public class CommandSay extends Command {
                     input = input.replace("<#"+textChannel.getId()+">", "");
                 }
             }
-            if(input.contains("-pmn")) {
-                String value = utils.getParameterValue(input, "-pmn");
-                if(!value.equalsIgnoreCase("")
-                        && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-                    receiver = value;
-                }
-                input = input.replace("-pmn "+value, "");
-            } else if(input.contains("-pmid")) {
+            if(input.contains("-pmid")) {
                 String value = utils.getParameterValue(input, "-pmid");
                 if(!value.equalsIgnoreCase("")
                         && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-                    receiver = value;
+                    User user = e.getGuild().getMemberById(value).getUser();
+                    if(user != null
+                            && !userReceivers.contains(user.getId())) {
+                        userReceivers.add(user.getId());
+                    }
                 }
                 input = input.replace("-pmid "+value, "");
             }
-            else if(input.contains("-pm")) {
+            if(input.contains("-pm")) {
                 if(!e.getMessage().getMentionedUsers().isEmpty()
                         && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-                    multiple = true;
-                    channelReceivers.clear();
-                    e.getMessage().getMentionedUsers().forEach(user -> userReceivers.add(e.getGuild().getMember(user)));
+                    e.getMessage().getMentionedUsers().forEach(user -> {
+                        if(!userReceivers.contains(user.getId())) {
+                            userReceivers.add(user.getId());
+                        }
+                    });
                 }
                 input = input.replace("-pm", "");
                 for(User user : e.getMessage().getMentionedUsers()) {
@@ -116,23 +118,12 @@ public class CommandSay extends Command {
                 input = randomParts[randomObject.nextInt(randomParts.length)];
             }
             input = utils.stripFormatting(input);
-            if(multiple) {
-                if(channelReceivers.isEmpty()) {
-                    sendMessage(userReceivers, input);
-                } else {
-                    sendMessageChannel(channelReceivers, input);
-                }
+            if(channelReceivers.isEmpty()
+                    && userReceivers.isEmpty()) {
+                e.getChannel().sendMessage(input).queue();
             } else {
-                if(e.getGuild().getTextChannelById(receiver) != null) {
-                    sendMessage(e.getGuild().getTextChannelById(receiver), input);
-                } else if(e.getJDA().getUserById(receiver) != null) {
-                    sendMessage(e.getJDA().getUserById(receiver), input);
-                } else if(e.getGuild().getMembersByName(receiver, true).size() > 0) {
-                    sendMessage(e.getGuild().getMembersByName(receiver, true), input);
-                }
-                else {
-                    e.getChannel().sendMessage(input).queue();
-                }
+                sendMessageChannel(channelReceivers, e.getGuild(), input);
+                sendMessageMember(userReceivers, e.getGuild(), input);
             }
             if(!silent) {
                 e.getChannel().sendMessage("I have sent that message.").queue();
@@ -142,20 +133,14 @@ public class CommandSay extends Command {
         }
     }
 
-    private void sendMessage(User user, final String input) {
-        user.openPrivateChannel().queue(pm -> pm.sendMessage(input).queue());
+    private void sendMessageMember(List<String> users, Guild guild, final String input) {
+        users.forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(channel ->
+                channel.sendMessage(input).queue()));
     }
 
-    private void sendMessage(TextChannel textChannel, final String input) {
-        textChannel.sendMessage(input).queue();
-    }
-
-    private void sendMessage(List<Member> users, final String input) {
-        users.forEach(user -> sendMessage(user.getUser(), input));
-    }
-
-    private void sendMessageChannel(List<TextChannel> channels, final String input) {
-        channels.forEach(channel -> channel.sendMessage(input).queue());
+    private void sendMessageChannel(List<String> channels, Guild guild, final String input) {
+        channels.forEach(channelid -> guild.getJDA().getTextChannelById(channelid)
+                .sendMessage(input).queue());
     }
 
 }
