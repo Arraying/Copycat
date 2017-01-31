@@ -27,10 +27,12 @@ public class CommandSay extends Command {
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
         if(args.length > 1) {
+            long before = System.currentTimeMillis();
             String input = e.getMessage().getRawContent().substring(copycat.getConfig().getBotPrefix().length());
             input = input.substring(input.indexOf(" "));
             String receiver = "nutin";
-            List<Member> receivers = new ArrayList<>();
+            List<Member> userReceivers = new ArrayList<>();
+            List<TextChannel> channelReceivers = new ArrayList<>();
             Random randomObject = new Random();
             boolean silent = false, multiple = false, random = false;
             if(input.contains("-d")) {
@@ -58,12 +60,18 @@ public class CommandSay extends Command {
                 }
                 input = input.replace("-cid "+value, "");
             } else if(input.contains("-c")) {
-                if(!e.getMessage().getMentionedChannels().isEmpty()
-                        && PermissionUtil.checkPermission(e.getMessage().getMentionedChannels().get(0), e.getMember(), Permission.MESSAGE_WRITE)) {
-                    receiver = e.getMessage().getMentionedChannels().get(0).getId();
+                if(!e.getMessage().getMentionedChannels().isEmpty()) {
+                    multiple = true;
+                    e.getMessage().getMentionedChannels().forEach(channel -> {
+                        if(PermissionUtil.checkPermission(channel, e.getMember(), Permission.MESSAGE_WRITE)) {
+                            channelReceivers.add(channel);
+                        }
+                    });
                 }
                 input = input.replace("-c", "");
-                input = input.replace("<#"+receiver+">", "");
+                for(TextChannel textChannel : e.getMessage().getMentionedChannels()) {
+                    input = input.replace("<#"+textChannel.getId()+">", "");
+                }
             }
             if(input.contains("-pmn")) {
                 String value = utils.getParameterValue(input, "-pmn");
@@ -84,7 +92,8 @@ public class CommandSay extends Command {
                 if(!e.getMessage().getMentionedUsers().isEmpty()
                         && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
                     multiple = true;
-                    e.getMessage().getMentionedUsers().forEach(user -> receivers.add(e.getGuild().getMember(user)));
+                    channelReceivers.clear();
+                    e.getMessage().getMentionedUsers().forEach(user -> userReceivers.add(e.getGuild().getMember(user)));
                 }
                 input = input.replace("-pm", "");
                 for(User user : e.getMessage().getMentionedUsers()) {
@@ -108,7 +117,11 @@ public class CommandSay extends Command {
             }
             input = utils.stripFormatting(input);
             if(multiple) {
-                sendMessage(receivers, input);
+                if(channelReceivers.isEmpty()) {
+                    sendMessage(userReceivers, input);
+                } else {
+                    sendMessageChannel(channelReceivers, input);
+                }
             } else {
                 if(e.getGuild().getTextChannelById(receiver) != null) {
                     sendMessage(e.getGuild().getTextChannelById(receiver), input);
@@ -139,6 +152,10 @@ public class CommandSay extends Command {
 
     private void sendMessage(List<Member> users, final String input) {
         users.forEach(user -> sendMessage(user.getUser(), input));
+    }
+
+    private void sendMessageChannel(List<TextChannel> channels, final String input) {
+        channels.forEach(channel -> channel.sendMessage(input).queue());
     }
 
 }
