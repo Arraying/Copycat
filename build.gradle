@@ -7,7 +7,7 @@ plugins {
     id'com.github.johnrengelman.shadow' version '1.2.4'
 }
 group 'Copycat'
-version '1.2.2'
+version '1.2.4'
 apply plugin: 'java'
 mainClassName = 'de.arraying.Copycat.Main'
 sourceCompatibility = 1.8
