@@ -3,7 +3,6 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.objects.ObjectUtils;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -11,9 +10,23 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
+/**
+ * Copyright 2017 Arraying
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 public class CommandSay extends Command {
 
     private Copycat copycat;
@@ -107,7 +120,7 @@ public class CommandSay extends Command {
                     }
                 }
             }
-            input = input.trim();
+            input = input.trim().replaceAll(" +", " ");
             if(input.isEmpty()
                     || input.equalsIgnoreCase(" ")) {
                 e.getChannel().sendMessage("The message is empty, add some kittens to it, please.").queue();
@@ -124,34 +137,11 @@ public class CommandSay extends Command {
                 }
                 e.getChannel().sendMessage(input).queue();
             } else {
-                sendMessageChannel(channelReceivers, e.getGuild(), e.getAuthor(), input);
-                sendMessageMember(userReceivers, e.getGuild(), e.getAuthor(), input);
-            }
-            if(!silent) {
-                e.getChannel().sendMessage("I have sent that message.").queue();
+                utils.sendMessages(e.getChannel(), userReceivers, channelReceivers, e.getAuthor(), input, silent);
             }
         } else {
             e.getChannel().sendMessage(getSyntaxMessage()).queue();
         }
-    }
-
-    private void sendMessageMember(List<String> users, Guild guild, User sender, String input) {
-        users.forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(channel ->
-                channel.sendMessage(input+"\n\nSent from \""+guild.getName()+"\" by "+sender.getName()+"#"+sender.getDiscriminator()+".").queue()));
-    }
-
-    private void sendMessageChannel(List<String> channels, Guild guild, User sender, String input) {
-        channels.forEach(channelid -> {
-            TextChannel textChannel = guild.getJDA().getTextChannelById(channelid);
-            String finalInput;
-            if(!PermissionUtil.checkPermission(textChannel, guild.getMember(sender), Permission.MESSAGE_MENTION_EVERYONE)) {
-                finalInput = utils.stripFormatting(input);
-            } else {
-                finalInput = input;
-            }
-            textChannel.sendMessage(finalInput).queue();
-        });
-
     }
 
 }
