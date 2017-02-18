@@ -46,7 +46,8 @@ public class ListenerChat extends ListenerAdapter {
                 || !PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_EMBED_LINKS)
                 || !command.startsWith(copycat.getConfig().getBotPrefix())
                 || e.getAuthor() == null
-                || e.getChannel() == null) {
+                || e.getChannel() == null
+                || e.getAuthor().getId().equalsIgnoreCase(e.getJDA().getSelfUser().getId())) {
             return;
         }
         command = command.substring(copycat.getConfig().getBotPrefix().length());

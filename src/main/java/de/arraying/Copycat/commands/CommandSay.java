@@ -136,6 +136,9 @@ public class CommandSay extends Command {
                     input = utils.stripFormatting(input);
                 }
                 e.getChannel().sendMessage(input).queue();
+                if(!silent) {
+                    e.getChannel().sendMessage("I have sent the message.").queue();
+                }
             } else {
                 utils.sendMessages(e.getChannel(), userReceivers, channelReceivers, e.getAuthor(), input, silent);
             }
