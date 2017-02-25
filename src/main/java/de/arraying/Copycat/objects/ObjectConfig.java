@@ -25,6 +25,8 @@ public @Data class ObjectConfig {
     private final String botPrefix;
     private final String botVersion;
     private final boolean botBeta;
+    private final String keyCarbonitex;
+    private final String keyBotsDiscordPw;
 
     /**
      * The local config objects file for the bot.
@@ -34,14 +36,19 @@ public @Data class ObjectConfig {
      * @param botPrefix The prefix the bot will use.
      * @param botVersion The version of the bot.
      * @param botBeta Whether or not the bot should use the beta token.
+     * @param keyCarbonitex The Carbonitex API key.
+     * @param keyBotsDiscordPw The bots.discord.pw API key.
      */
-    public ObjectConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta) {
+    public ObjectConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta,
+                        String keyCarbonitex, String keyBotsDiscordPw) {
         this.botToken = botToken;
         this.botBetaToken = botBetaToken;
         this.botAuthor = botAuthor;
         this.botPrefix = botPrefix;
         this.botVersion = botVersion;
         this.botBeta = botBeta;
+        this.keyCarbonitex = keyCarbonitex;
+        this.keyBotsDiscordPw = keyBotsDiscordPw;
     }
 
 }

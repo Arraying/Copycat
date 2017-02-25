@@ -65,7 +65,8 @@ public class CommandHelp extends Command {
             embedBuilder.replaceFieldValue("Information", "{author}", author);
             embedBuilder.replaceFieldValue("Usage", "{prefix}", copycat.getConfig().getBotPrefix());
             StringBuilder stringBuilder = new StringBuilder();
-            copycat.getCommands().keySet().forEach(command -> stringBuilder.append("- ").append(command).append("\n"));
+            copycat.getCommands().values().stream().filter(command -> !command.isAuthorOnly())
+                    .forEach(command -> stringBuilder.append("- ").append(command.getName()).append("\n"));
             embedBuilder.replaceFieldValue("Commands", "{commands}", stringBuilder.toString());
             goneOver = true;
         }

@@ -7,7 +7,7 @@ plugins {
     id'com.github.johnrengelman.shadow' version '1.2.4'
 }
 group 'Copycat'
-version '1.3.1'
+version '1.3.3'
 apply plugin: 'java'
 mainClassName = 'de.arraying.Copycat.Main'
 sourceCompatibility = 1.8
@@ -15,11 +15,12 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'net.dv8tion:JDA:3.0.BETA2_130'
     compile "com.googlecode.json-simple:json-simple:1.1.1"
-    compile "org.reflections:reflections:0.9.10"
+    compile "com.mashape.unirest:unirest-java:1.4.9"
+    compile 'net.dv8tion:JDA:3.0.BETA2_137'
     compile "org.apache.commons:commons-lang3:3.0"
     compile "org.apache.commons:commons-io:1.3.2"
+    compile "org.reflections:reflections:0.9.10"
     compileOnly "org.projectlombok:lombok:1.16.12"
 }
 compileJava.options.encoding = 'UTF-8'

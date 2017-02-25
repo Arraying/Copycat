@@ -1,8 +1,10 @@
 package de.arraying.Copycat;
 
+import de.arraying.Copycat.listeners.ListenerChange;
 import de.arraying.Copycat.objects.ObjectConfig;
 import de.arraying.Copycat.commands.Command;
 import de.arraying.Copycat.listeners.ListenerChat;
+import de.arraying.Copycat.objects.ObjectRequester;
 import lombok.Getter;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -44,6 +46,7 @@ public class Copycat {
     @Getter private HashMap<String, Integer> queue;
     @Getter private SimpleLog logger;
     @Getter private ObjectConfig config;
+    @Getter private ObjectRequester requester;
 
     /**
      * Static instance getter.
@@ -66,6 +69,8 @@ public class Copycat {
         String botPrefix = "copycat ";
         String botVersion = "1.0.0";
         boolean botBeta = true;
+        String keyCarbonitex = "arraying123456789";
+        String keyBotsDiscordPw = "abcdefghijklmnopqrstuvwxyz123456789";
         File configFile = new File("config.json");
         if(!configFile.exists()) {
             try {
@@ -76,7 +81,9 @@ public class Copycat {
                             "\t\"botAuthor\":\""+botAuthor+"\",\n"+
                             "\t\"botPrefix\":\""+botPrefix+"\",\n"+
                             "\t\"botVersion\":\""+botVersion+"\",\n"+
-                            "\t\"botBeta\":"+botBeta+"\n"+
+                            "\t\"botBeta\":"+botBeta+",\n"+
+                            "\t\"keyCarbonitex\":\""+keyCarbonitex+"\",\n"+
+                            "\t\"keyBotsDiscordPw\":\""+keyBotsDiscordPw+"\"\n"+
                             "}";
                     BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(configFile));
                     bufferedWriter.write(jsonString);
@@ -102,7 +109,9 @@ public class Copycat {
                 botPrefix = (String) jsonObject.get("botPrefix");
                 botVersion = (String) jsonObject.get("botVersion");
                 botBeta = (boolean) jsonObject.get("botBeta");
-                config = new ObjectConfig(botToken, botBetaToken, botAuthor, botPrefix, botVersion, botBeta);
+                keyCarbonitex = (String) jsonObject.get("keyCarbonitex");
+                keyBotsDiscordPw = (String) jsonObject.get("keyBotsDiscordPw");
+                config = new ObjectConfig(botToken, botBetaToken, botAuthor, botPrefix, botVersion, botBeta, keyCarbonitex, keyBotsDiscordPw);
             } catch(IOException | ParseException e) {
                 logger.log(SimpleLog.Level.FATAL, "Could not parse config.json, shutting down.");
             }
@@ -119,6 +128,7 @@ public class Copycat {
             }
         });
         queue = new HashMap<>();
+        requester = new ObjectRequester();
         logger.log(SimpleLog.Level.INFO, "Loaded everything, it took "+(System.currentTimeMillis()-timeBegin)+" milliseconds. Starting JDA now.");
         try {
              jda = new JDABuilder(AccountType.BOT)
@@ -126,6 +136,7 @@ public class Copycat {
                     .setStatus(OnlineStatus.DO_NOT_DISTURB)
                     .setGame(Game.of(botPrefix+"help || "+botVersion))
                     .addListener(new ListenerChat())
+                     .addListener(new ListenerChange())
                     .buildBlocking();
         } catch(LoginException | InterruptedException | RateLimitedException e) {
             logger.log(SimpleLog.Level.FATAL, "The bot encountered an exception.");

@@ -71,7 +71,6 @@ public @Data abstract class Command {
         }
         if(enabled) {
             if(authorOnly && !e.getMember().getUser().getId().equalsIgnoreCase(Copycat.getInstance().getConfig().getBotAuthor())) {
-                e.getChannel().sendMessage("That command is only for the bot author.").queue();
                 return;
             }
             if(PermissionUtil.checkPermission(e.getChannel(), e.getMember(), permission)) {
