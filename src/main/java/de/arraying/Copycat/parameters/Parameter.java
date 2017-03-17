@@ -1,6 +1,6 @@
-package de.arraying.Copycat.commands;
+package de.arraying.Copycat.parameters;
 
-import net.dv8tion.jda.core.Permission;
+import lombok.Data;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 /**
@@ -18,21 +18,24 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class CommandWoof extends Command {
+public abstract @Data class Parameter {
+
+    private final String trigger;
 
     /**
-     * Readies the woof command.
+     * Creates a new parameter.
+     * @param trigger The trigger of the parameter.
      */
-    public CommandWoof() {
-        super("woof", "Checks how fast I can meow back.", Permission.MESSAGE_WRITE, "woof", false);
-        getAliases().add("ping");
+    public Parameter(String trigger) {
+        this.trigger = trigger;
     }
 
-    @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        long before = System.currentTimeMillis();
-        e.getChannel().sendMessage("Did I hear a dog?")
-                .queue(message -> message.editMessage("Meow ("+(System.currentTimeMillis()-before)+"ms)!").queue());
-    }
+    /**
+     * What happens when the parameter is present.
+     * @param e The chat event.
+     * @param input The current input.
+     * @return The input, after modification.
+     */
+    public abstract String invoke(GuildMessageReceivedEvent e, String input);
 
 }

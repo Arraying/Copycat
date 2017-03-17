@@ -1,4 +1,4 @@
-package de.arraying.Copycat.objects;
+package de.arraying.Copycat.utils;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageEmbed;
@@ -21,7 +21,7 @@ import java.util.List;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class ObjectEmbedBuilder extends EmbedBuilder {
+public class UtilsEmbedBuilder extends EmbedBuilder {
 
     private Field fieldsField;
     private List<MessageEmbed.Field> fields;
@@ -29,7 +29,7 @@ public class ObjectEmbedBuilder extends EmbedBuilder {
     /**
      * The constructor, which will set things up, and send a stacktrace is an error occurs.
      */
-    public ObjectEmbedBuilder() {
+    public UtilsEmbedBuilder() {
         try {
             fieldsField = EmbedBuilder.class.getDeclaredField("fields");
             fieldsField.setAccessible(true);
@@ -42,9 +42,9 @@ public class ObjectEmbedBuilder extends EmbedBuilder {
     /**
      * Removes a field from the EmbedBuilder.
      * @param title The name of the field you wish to remove.
-     * @return The ObjectEmbedBuilder instance.
+     * @return The UtilsEmbedBuilder instance.
      */
-    public ObjectEmbedBuilder removeField(String title) {
+    public UtilsEmbedBuilder removeField(String title) {
         pullUpdate();
         List<MessageEmbed.Field> toRemvove = new ArrayList<>();
         fields.stream().filter(fStream -> fStream.getName().equalsIgnoreCase(title))
@@ -58,9 +58,9 @@ public class ObjectEmbedBuilder extends EmbedBuilder {
      * Changes the value of a field from the EmbedBuilder.
      * @param title The name of the field you wish to change the value of.
      * @param value The new value of the field.
-     * @return The ObjectEmbedBuilder instance.
+     * @return The UtilsEmbedBuilder instance.
      */
-    public ObjectEmbedBuilder setFieldValue(String title, String value) {
+    public UtilsEmbedBuilder setFieldValue(String title, String value) {
         if(value.length() > 1024) {
             value = value.substring(value.length()-6);
             value += "[...]";
@@ -85,9 +85,9 @@ public class ObjectEmbedBuilder extends EmbedBuilder {
      * @param title The name of the field you wish to malipulate.
      * @param from The string it will replace.
      * @param to The string it will replace to.
-     * @return The ObjectEmbedBuilder instance.
+     * @return The UtilsEmbedBuilder instance.
      */
-    public ObjectEmbedBuilder replaceFieldValue(String title, String from, String to) {
+    public UtilsEmbedBuilder replaceFieldValue(String title, String from, String to) {
         pullUpdate();
         fields.stream().filter(fStream -> fStream.getName().equalsIgnoreCase(title))
                 .forEach(fStream -> {
@@ -107,9 +107,9 @@ public class ObjectEmbedBuilder extends EmbedBuilder {
      * Changes whether a field should be displayed inline from the EmbedBuilder.
      * @param title The name fo the field you wish to change the inline property of.
      * @param inline The new inline value.
-     * @return The ObjectEmbedBuilder instance
+     * @return The UtilsEmbedBuilder instance
      */
-    public ObjectEmbedBuilder setFieldInline(String title, boolean inline) {
+    public UtilsEmbedBuilder setFieldInline(String title, boolean inline) {
         pullUpdate();
         fields.stream().filter(fStream -> fStream.getName().equalsIgnoreCase(title))
                 .forEach(fStream -> {

@@ -23,6 +23,9 @@ public class CommandQueue extends Command {
 
     private final Copycat copycat;
 
+    /**
+     * Readies the queue command.
+     */
     public CommandQueue() {
         super("queue", "Shows the current queue status.", Permission.MESSAGE_WRITE, "queue", false);
         copycat = Copycat.getInstance();

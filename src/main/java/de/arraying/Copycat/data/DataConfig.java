@@ -1,4 +1,4 @@
-package de.arraying.Copycat.objects;
+package de.arraying.Copycat.data;
 
 import lombok.Data;
 
@@ -17,7 +17,7 @@ import lombok.Data;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public @Data class ObjectConfig {
+public @Data class DataConfig {
 
     private final String botToken;
     private final String botBetaToken;
@@ -39,8 +39,8 @@ public @Data class ObjectConfig {
      * @param keyCarbonitex The Carbonitex API key.
      * @param keyBotsDiscordPw The bots.discord.pw API key.
      */
-    public ObjectConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta,
-                        String keyCarbonitex, String keyBotsDiscordPw) {
+    public DataConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta,
+                      String keyCarbonitex, String keyBotsDiscordPw) {
         this.botToken = botToken;
         this.botBetaToken = botBetaToken;
         this.botAuthor = botAuthor;

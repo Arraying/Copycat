@@ -1,10 +1,12 @@
 package de.arraying.Copycat;
 
+import de.arraying.Copycat.data.DataConfig;
+import de.arraying.Copycat.data.DataSay;
 import de.arraying.Copycat.listeners.ListenerChange;
-import de.arraying.Copycat.objects.ObjectConfig;
 import de.arraying.Copycat.commands.Command;
 import de.arraying.Copycat.listeners.ListenerChat;
-import de.arraying.Copycat.objects.ObjectRequester;
+import de.arraying.Copycat.parameters.Parameter;
+import de.arraying.Copycat.utils.UtilsRequester;
 import lombok.Getter;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -20,8 +22,11 @@ import org.reflections.Reflections;
 
 import javax.security.auth.login.LoginException;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Copyright 2017 Arraying
@@ -44,9 +49,12 @@ public class Copycat {
     @Getter private JDA jda;
     @Getter private TreeMap<String, Command> commands;
     @Getter private HashMap<String, Integer> queue;
+    @Getter private ArrayList<Parameter> parameters;
     @Getter private SimpleLog logger;
-    @Getter private ObjectConfig config;
-    @Getter private ObjectRequester requester;
+    @Getter private DataConfig dataConfig;
+    @Getter private DataSay dataSay;
+    @Getter private UtilsRequester requester;
+    @Getter private ScheduledExecutorService scheduler;
 
     /**
      * Static instance getter.
@@ -111,7 +119,7 @@ public class Copycat {
                 botBeta = (boolean) jsonObject.get("botBeta");
                 keyCarbonitex = (String) jsonObject.get("keyCarbonitex");
                 keyBotsDiscordPw = (String) jsonObject.get("keyBotsDiscordPw");
-                config = new ObjectConfig(botToken, botBetaToken, botAuthor, botPrefix, botVersion, botBeta, keyCarbonitex, keyBotsDiscordPw);
+                dataConfig = new DataConfig(botToken, botBetaToken, botAuthor, botPrefix, botVersion, botBeta, keyCarbonitex, keyBotsDiscordPw);
             } catch(IOException | ParseException e) {
                 logger.log(SimpleLog.Level.FATAL, "Could not parse config.json, shutting down.");
             }
@@ -122,13 +130,26 @@ public class Copycat {
             try {
                 Command command = subclass.newInstance();
                 commands.put(command.getName(), command);
-                logger.log(SimpleLog.Level.INFO, "Registered the command "+command.getName()+".");
+                logger.log(SimpleLog.Level.INFO, "Registered the command \""+command.getName()+"\".");
             } catch(InstantiationException | IllegalAccessException e) {
-                logger.log(SimpleLog.Level.FATAL, "Could not register "+subclass.getSimpleName()+".");
+                logger.log(SimpleLog.Level.FATAL, "Could not register \""+subclass.getSimpleName()+"\".");
+            }
+        });
+        parameters = new ArrayList<>();
+        reflections = new Reflections("de.arraying.Copycat.parameters");
+        reflections.getSubTypesOf(Parameter.class).forEach(subclass -> {
+            try {
+                Parameter parameter = subclass.newInstance();
+                parameters.add(parameter);
+                logger.log(SimpleLog.Level.INFO, "Registered the parameter \""+parameter.getTrigger()+"\"");
+            } catch(InstantiationException | IllegalAccessException e) {
+                logger.log(SimpleLog.Level.FATAL, "Could not register \""+subclass.getSimpleName()+"\".");
             }
         });
         queue = new HashMap<>();
-        requester = new ObjectRequester();
+        dataSay = new DataSay();
+        requester = new UtilsRequester();
+        scheduler = Executors.newScheduledThreadPool(1);
         logger.log(SimpleLog.Level.INFO, "Loaded everything, it took "+(System.currentTimeMillis()-timeBegin)+" milliseconds. Starting JDA now.");
         try {
              jda = new JDABuilder(AccountType.BOT)

@@ -1,7 +1,8 @@
-package de.arraying.Copycat.commands;
+package de.arraying.Copycat.parameters;
 
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+
+import java.util.Random;
 
 /**
  * Copyright 2017 Arraying
@@ -18,21 +19,23 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class CommandWoof extends Command {
+public class ParameterRandom extends Parameter {
 
     /**
-     * Readies the woof command.
+     * The random parameter (-r) takes the input
+     * and splits it into an array using the
+     * character ";". A random string from that
+     * array is then returned.
      */
-    public CommandWoof() {
-        super("woof", "Checks how fast I can meow back.", Permission.MESSAGE_WRITE, "woof", false);
-        getAliases().add("ping");
+    public ParameterRandom() {
+        super("-r");
     }
 
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        long before = System.currentTimeMillis();
-        e.getChannel().sendMessage("Did I hear a dog?")
-                .queue(message -> message.editMessage("Meow ("+(System.currentTimeMillis()-before)+"ms)!").queue());
+    public String invoke(GuildMessageReceivedEvent e, String input) {
+        Random random = new Random();
+        String[] parts = input.split(";");
+        return parts[random.nextInt(parts.length)];
     }
 
 }

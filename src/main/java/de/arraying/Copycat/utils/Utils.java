@@ -1,6 +1,7 @@
-package de.arraying.Copycat.objects;
+package de.arraying.Copycat.utils;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.data.DataSayValues;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -8,7 +9,6 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 /**
  * Copyright 2017 Arraying
@@ -25,17 +25,17 @@ import java.util.ArrayList;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class ObjectUtils {
+public class Utils {
 
-    private static ObjectUtils instance;
+    private static Utils instance;
 
     /**
      * Static instance getter.
      * @return  An instance of the object.
      */
-    public static ObjectUtils getInstance() {
+    public static Utils getInstance() {
         if(instance == null) {
-            instance = new ObjectUtils();
+            instance = new Utils();
         }
         return instance;
     }
@@ -44,8 +44,8 @@ public class ObjectUtils {
      * Makes a new Copycat style embed. Used to avoid repetition.
      * @return An instance of the Copycat custom embed builder.
      */
-    public ObjectEmbedBuilder getCopycatBuilder() {
-        ObjectEmbedBuilder embedBuilder = new ObjectEmbedBuilder();
+    public UtilsEmbedBuilder getCopycatBuilder() {
+        UtilsEmbedBuilder embedBuilder = new UtilsEmbedBuilder();
         embedBuilder.setColor(new Color(34, 150, 245));
         embedBuilder.setAuthor("Copycat","https://discordapp.com", null);
         return embedBuilder;
@@ -81,16 +81,23 @@ public class ObjectUtils {
         return string.replace("@here", "@\u180Ehere").replace("@everyone", "@\u180Eeveryone");
     }
 
+    public boolean isInt(String input) {
+        try {
+            Integer.valueOf(input);
+            return true;
+        } catch(NumberFormatException ex) {
+            return false;
+        }
+    }
+
     /**
      * Sends a message using a queue.
      * @param channel The text channel the command was executed in.
-     * @param users A list of user IDs the messages should be sent to.
-     * @param channels A list of channel IDs the messages should be sent to.
+     * @param data The say command data.
      * @param sender The command executor's user object.
      * @param message The message itself.
-     * @param silent Whether this message should send silently.
      */
-    public void sendMessages(TextChannel channel, ArrayList<String> users, ArrayList<String> channels, User sender, String message, boolean silent) {
+    public void sendMessages(TextChannel channel, DataSayValues data, User sender, String message) {
         Copycat copycat = Copycat.getInstance();
         Guild guild = channel.getGuild();
         String id = guild.getId();
@@ -99,11 +106,11 @@ public class ObjectUtils {
                    "Use the queue command to check its status.").queue();
            return;
         }
-        copycat.getQueue().put(id, (users.size()+channels.size()));
-        users.forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(privateChannel ->
+        copycat.getQueue().put(id, (data.getUserReceivers().size()+data.getChannelReceivers().size()));
+        data.getUserReceivers().forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(privateChannel ->
                 privateChannel.sendMessage(message+"\n\nSent from \""+guild.getName()+"\" by "+sender.getName()+"#"+sender.getDiscriminator()+".").queue(complete ->
-                        checkDone(channel, silent))));
-        channels.forEach(channelid -> {
+                        checkDone(channel, data.isSilent()))));
+        data.getChannelReceivers().forEach(channelid -> {
             TextChannel textChannel = guild.getJDA().getTextChannelById(channelid);
             String finalInput;
             if(!PermissionUtil.checkPermission(textChannel, guild.getMember(sender), Permission.MESSAGE_MENTION_EVERYONE)) {
@@ -111,7 +118,7 @@ public class ObjectUtils {
             } else {
                 finalInput = message;
             }
-            textChannel.sendMessage(finalInput).queue(complete -> checkDone(channel, silent));
+            textChannel.sendMessage(finalInput).queue(complete -> checkDone(channel, data.isSilent()));
         });
     }
 

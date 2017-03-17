@@ -26,8 +26,8 @@ import javax.script.ScriptException;
  */
 public class CommandEval extends Command {
 
-    private Copycat copycat;
-    private ScriptEngine scriptEngine;
+    private final Copycat copycat;
+    private final ScriptEngine scriptEngine;
 
     /**
      * Readies the eval engine, using Nashorn.
@@ -55,7 +55,7 @@ public class CommandEval extends Command {
             scriptEngine.put("jda", e.getJDA());
             scriptEngine.put("e", e);
             Object output;
-            String input = e.getMessage().getRawContent().substring(copycat.getConfig().getBotPrefix().length());
+            String input = e.getMessage().getRawContent().substring(copycat.getDataConfig().getBotPrefix().length());
             input = input.substring(input.indexOf(" "));
             try {
                 output = scriptEngine.eval("(function() { with (imports) {\n" + input + "\n} })();");

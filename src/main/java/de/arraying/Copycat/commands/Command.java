@@ -70,7 +70,7 @@ public @Data abstract class Command {
             return;
         }
         if(enabled) {
-            if(authorOnly && !e.getMember().getUser().getId().equalsIgnoreCase(Copycat.getInstance().getConfig().getBotAuthor())) {
+            if(authorOnly && !e.getMember().getUser().getId().equalsIgnoreCase(Copycat.getInstance().getDataConfig().getBotAuthor())) {
                 return;
             }
             if(PermissionUtil.checkPermission(e.getChannel(), e.getMember(), permission)) {
@@ -90,7 +90,7 @@ public @Data abstract class Command {
      * @return The message.
      */
     public String getSyntaxMessage() {
-        return "Incorrect syntax. Do '"+Copycat.getInstance().getConfig().getBotPrefix()+syntax+"'.";
+        return "Incorrect syntax. Do '"+Copycat.getInstance().getDataConfig().getBotPrefix()+syntax+"'.";
     }
 
 }

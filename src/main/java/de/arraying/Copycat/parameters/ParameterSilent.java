@@ -1,6 +1,6 @@
-package de.arraying.Copycat.commands;
+package de.arraying.Copycat.parameters;
 
-import net.dv8tion.jda.core.Permission;
+import de.arraying.Copycat.data.DataSay;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 /**
@@ -18,21 +18,21 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class CommandWoof extends Command {
+public class ParameterSilent extends Parameter {
 
     /**
-     * Readies the woof command.
+     * The silent parameter (-s) does not send the
+     * "The message has been sent" message when
+     * the message is sent.
      */
-    public CommandWoof() {
-        super("woof", "Checks how fast I can meow back.", Permission.MESSAGE_WRITE, "woof", false);
-        getAliases().add("ping");
+    public ParameterSilent() {
+        super("-s");
     }
 
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        long before = System.currentTimeMillis();
-        e.getChannel().sendMessage("Did I hear a dog?")
-                .queue(message -> message.editMessage("Meow ("+(System.currentTimeMillis()-before)+"ms)!").queue());
+    public String invoke(GuildMessageReceivedEvent e, String input) {
+        DataSay.retrieve(e.getMessage().getId()).setSilent(true);
+        return input.replace(getTrigger(), "");
     }
 
 }

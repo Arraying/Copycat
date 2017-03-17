@@ -1,4 +1,4 @@
-package de.arraying.Copycat.objects;
+package de.arraying.Copycat.utils;
 
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -24,7 +24,7 @@ import org.json.JSONObject;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class ObjectRequester {
+public class UtilsRequester {
 
     private final Copycat copycat;
 
@@ -32,7 +32,7 @@ public class ObjectRequester {
      * Constructor to get the copycat instance
      * for ease of access.
      */
-    public ObjectRequester() {
+    public UtilsRequester() {
         this.copycat = Copycat.getInstance();
         RequestConfig config = RequestConfig.custom()
                 .setCookieSpec(CookieSpecs.IGNORE_COOKIES).build();
@@ -48,9 +48,9 @@ public class ObjectRequester {
      */
     public void sendPostRequests(String botId, int servercount)
             throws UnirestException {
-        if(!copycat.getConfig().isBotBeta()) {
-            String carbonitex = copycat.getConfig().getKeyCarbonitex();
-            String discordBots = copycat.getConfig().getKeyBotsDiscordPw();
+        if(!copycat.getDataConfig().isBotBeta()) {
+            String carbonitex = copycat.getDataConfig().getKeyCarbonitex();
+            String discordBots = copycat.getDataConfig().getKeyBotsDiscordPw();
             Unirest.post("https://www.carbonitex.net/discord/data/botdata.php")
                     .header("Content-Type", "application/json")
                     .body(new JSONObject().put("key", carbonitex).put("servercount", servercount))

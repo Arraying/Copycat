@@ -1,8 +1,7 @@
 package de.arraying.Copycat.commands;
 
-import de.arraying.Copycat.Copycat;
-import de.arraying.Copycat.objects.ObjectEmbedBuilder;
-import de.arraying.Copycat.objects.ObjectUtils;
+import de.arraying.Copycat.utils.UtilsEmbedBuilder;
+import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.commons.io.FileUtils;
@@ -24,15 +23,16 @@ import org.apache.commons.io.FileUtils;
  */
 public class CommandStats extends Command {
 
-    private Copycat copycat;
-    private ObjectEmbedBuilder embedBuilder;
+    private UtilsEmbedBuilder embedBuilder;
 
+    /**
+     * Readies the stats command.
+     */
     public CommandStats() {
         super("stats", "Shows my statistics.", Permission.MESSAGE_WRITE, "stats", false);
         getAliases().add("statistics");
         getAliases().add("info");
-        copycat = Copycat.getInstance();
-        embedBuilder = ObjectUtils.getInstance().getCopycatBuilder();
+        embedBuilder = Utils.getInstance().getCopycatBuilder();
         embedBuilder.setDescription("Here are the statistics for Copycat.\n"+
                 "Information can be found using the help command.");
         embedBuilder.addField("I am meowing alongside...", "An error occurred.", false);

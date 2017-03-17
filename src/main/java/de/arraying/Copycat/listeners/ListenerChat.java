@@ -44,13 +44,13 @@ public class ListenerChat extends ListenerAdapter {
         String command = e.getMessage().getRawContent().toLowerCase();
         if(!PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_WRITE)
                 || !PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_EMBED_LINKS)
-                || !command.startsWith(copycat.getConfig().getBotPrefix())
+                || !command.startsWith(copycat.getDataConfig().getBotPrefix())
                 || e.getAuthor() == null
                 || e.getChannel() == null
                 || e.getAuthor().getId().equalsIgnoreCase(e.getJDA().getSelfUser().getId())) {
             return;
         }
-        command = command.substring(copycat.getConfig().getBotPrefix().length());
+        command = command.substring(copycat.getDataConfig().getBotPrefix().length());
         command = command.replaceAll(" +", " ");
         String[] parts = command.split(" ");
         Command commandObject = copycat.getCommands().values().stream()

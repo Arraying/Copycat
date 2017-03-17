@@ -1,8 +1,8 @@
 package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
-import de.arraying.Copycat.objects.ObjectEmbedBuilder;
-import de.arraying.Copycat.objects.ObjectUtils;
+import de.arraying.Copycat.utils.UtilsEmbedBuilder;
+import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
@@ -23,9 +23,9 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  */
 public class CommandHelp extends Command {
 
-    private Copycat copycat;
-    private ObjectUtils utils;
-    private ObjectEmbedBuilder embedBuilder, commandBuilder;
+    private final Copycat copycat;
+    private final Utils utils;
+    private final UtilsEmbedBuilder embedBuilder, commandBuilder;
     private boolean goneOver;
 
     /**
@@ -35,7 +35,7 @@ public class CommandHelp extends Command {
         super("help", "Shows how you can play with me.", Permission.MESSAGE_WRITE, "help [command]", false);
         getAliases().add("commands");
         copycat = Copycat.getInstance();
-        utils = ObjectUtils.getInstance();
+        utils = Utils.getInstance();
         embedBuilder = utils.getCopycatBuilder();
         embedBuilder.setDescription("Hey! I'm Copycat. As you can tell, I copy people. I was made to send messages - in an advanced way. "+
                 "I don't ignore bots, they have feelings too, so you can hook me to them and make me do what they cannot do. "+
@@ -60,10 +60,10 @@ public class CommandHelp extends Command {
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
         if(!goneOver) {
-            String author = copycat.getJda().getUserById(copycat.getConfig().getBotAuthor()).getName()+"#"+
-                    copycat.getJda().getUserById(copycat.getConfig().getBotAuthor()).getDiscriminator();
+            String author = copycat.getJda().getUserById(copycat.getDataConfig().getBotAuthor()).getName()+"#"+
+                    copycat.getJda().getUserById(copycat.getDataConfig().getBotAuthor()).getDiscriminator();
             embedBuilder.replaceFieldValue("Information", "{author}", author);
-            embedBuilder.replaceFieldValue("Usage", "{prefix}", copycat.getConfig().getBotPrefix());
+            embedBuilder.replaceFieldValue("Usage", "{prefix}", copycat.getDataConfig().getBotPrefix());
             StringBuilder stringBuilder = new StringBuilder();
             copycat.getCommands().values().stream().filter(command -> !command.isAuthorOnly())
                     .forEach(command -> stringBuilder.append("- ").append(command.getName()).append("\n"));
@@ -78,10 +78,10 @@ public class CommandHelp extends Command {
                 commandBuilder.setFieldValue("Name", command.getName());
                 commandBuilder.setFieldValue("Description", command.getDescription());
                 commandBuilder.setFieldValue("Permission", command.getPermission().toString());
-                commandBuilder.setFieldValue("Syntax", copycat.getConfig().getBotPrefix()+command.getSyntax());
+                commandBuilder.setFieldValue("Syntax", copycat.getDataConfig().getBotPrefix()+command.getSyntax());
                 e.getChannel().sendMessage(commandBuilder.build()).queue();
             } else {
-                e.getChannel().sendMessage("I don't recognise that command. Do '"+copycat.getConfig().getBotPrefix()+"help' for a list of commands.");
+                e.getChannel().sendMessage("I don't recognise that command. Do '"+copycat.getDataConfig().getBotPrefix()+"help' for a list of commands.");
             }
         } else {
             e.getChannel().sendMessage(getSyntaxMessage()).queue();
