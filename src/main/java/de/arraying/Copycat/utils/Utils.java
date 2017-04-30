@@ -1,14 +1,19 @@
 package de.arraying.Copycat.utils;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.data.DataSayValues;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 /**
  * Copyright 2017 Arraying
@@ -91,6 +96,25 @@ public class Utils {
     }
 
     /**
+     * Replaces all the placeholders.
+     * @param input The input string.
+     * @param user The member executing the command.
+     * @return A replaced string.
+     */
+    public String replacePlaceholders(String input, Member user) {
+        return input.replace("{user}", user.getAsMention())
+                .replace("{userid}", user.getUser().getId())
+                .replace("{username}", user.getUser().getName())
+                .replace("{userdiscriminator}", user.getUser().getDiscriminator())
+                .replace("{guildcount}", String.valueOf(user.getGuild().getMembers().size()))
+                .replace("{guildname}", user.getGuild().getName())
+                .replace("{guildid}", user.getGuild().getId())
+                .replace("{random}", String.valueOf(new Random().nextInt(Short.MAX_VALUE-1)+1))
+                .replace("{date}", getDate())
+                .replace("{newline}", "\n");
+    }
+
+    /**
      * Sends a message using a queue.
      * @param channel The text channel the command was executed in.
      * @param data The say command data.
@@ -102,13 +126,15 @@ public class Utils {
         Guild guild = channel.getGuild();
         String id = guild.getId();
         if(copycat.getQueue().containsKey(id)) {
-           channel.sendMessage("I appreciate it that you are trying to user me, but you currently still have a message sending. " +
-                   "Use the queue command to check its status.").queue();
+           channel.sendMessage(Messages.get(guild, "message.queue")).queue();
            return;
         }
         copycat.getQueue().put(id, (data.getUserReceivers().size()+data.getChannelReceivers().size()));
+        String tempFooter = Copycat.getInstance().getLocalGuilds().get(guild.getId()).getFooter();
+        String nearlyFooter = tempFooter == null ?  Messages.get(guild, "message.footer") : tempFooter;
+        String footer = replacePlaceholders(nearlyFooter, guild.getMember(sender));
         data.getUserReceivers().forEach(userid -> guild.getJDA().getUserById(userid).openPrivateChannel().queue(privateChannel ->
-                privateChannel.sendMessage(message+"\n\nSent from \""+guild.getName()+"\" by "+sender.getName()+"#"+sender.getDiscriminator()+".").queue(complete ->
+                privateChannel.sendMessage(message+"\n"+footer).queue(complete ->
                         checkDone(channel, data.isSilent()))));
         data.getChannelReceivers().forEach(channelid -> {
             TextChannel textChannel = guild.getJDA().getTextChannelById(channelid);
@@ -137,11 +163,21 @@ public class Utils {
         if(currentQueue == 1) {
             copycat.getQueue().remove(id);
             if(!silent) {
-                channel.sendMessage("I have sent the message.").queue();
+                channel.sendMessage(Messages.get(channel.getGuild(), "command.say.sent")).queue();
             }
         } else {
             copycat.getQueue().put(id, currentQueue-1);
         }
+    }
+
+    /**
+     * Gets the date in a custom format.
+     * @return A date and time string.
+     */
+    private String getDate() {
+        String dateFormat = "dd/MM/yyyy kk:mm:ss";
+        SimpleDateFormat format = new SimpleDateFormat(dateFormat);
+        return format.format(new Date());
     }
 
 }

@@ -41,6 +41,7 @@ public class ListenerChange extends ListenerAdapter {
     public void onGuildJoin(GuildJoinEvent e) {
         try {
             copycat.getRequester().sendPostRequests(e.getJDA().getSelfUser().getId(), e.getJDA().getGuilds().size());
+            copycat.getDataManager().addGuild(e.getGuild().getId());
         } catch(UnirestException ex) {
             ex.printStackTrace();
         }
@@ -54,6 +55,7 @@ public class ListenerChange extends ListenerAdapter {
     public void onGuildLeave(GuildLeaveEvent e) {
         try {
             copycat.getRequester().sendPostRequests(e.getJDA().getSelfUser().getId(), e.getJDA().getGuilds().size());
+            copycat.getDataManager().removeGuild(e.getGuild().getId());
         } catch(UnirestException ex) {
             ex.printStackTrace();
         }

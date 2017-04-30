@@ -1,6 +1,7 @@
 package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.data.DataSay;
 import de.arraying.Copycat.data.DataSayValues;
 import de.arraying.Copycat.parameters.Parameter;
@@ -35,7 +36,7 @@ public class CommandSay extends Command {
      * Readies the say command.
      */
     public CommandSay() {
-        super("say", "My main feature. For more information, check my docs.", Permission.MESSAGE_WRITE, "say <input>", false);
+        super("say", "command.say.description", Permission.MESSAGE_WRITE, "say <input>", false);
         copycat = Copycat.getInstance();
         utils = Utils.getInstance();
     }
@@ -54,7 +55,7 @@ public class CommandSay extends Command {
             input = input.trim().replaceAll(" +", " ");
             if(input.isEmpty()
                     || input.equalsIgnoreCase(" ")) {
-                e.getChannel().sendMessage("The message is empty, add some kittens to it, please.").queue();
+                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.say.empty")).queue();
                 return;
             }
             DataSayValues data = DataSay.retrieve(e.getMessage().getId());
@@ -62,14 +63,14 @@ public class CommandSay extends Command {
                     && PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getSelfMember(), Permission.MESSAGE_MANAGE)) {
                 e.getMessage().delete().queue();
             }
-            final String finalInput = input;
+            final String finalInput = utils.replacePlaceholders(input, e.getMember());
             if(data.getDelay() != -1) {
                 copycat.getScheduler().schedule(() -> handleSend(e, data, finalInput), data.getDelay(), TimeUnit.SECONDS);
             } else {
                 handleSend(e, data, finalInput);
             }
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage()).queue();
+            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
         }
     }
 
@@ -86,7 +87,7 @@ public class CommandSay extends Command {
             }
             e.getChannel().sendMessage(input).queue();
             if(!data.isSilent()) {
-                e.getChannel().sendMessage("I have sent the message.").queue();
+                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.say.sent")).queue();
             }
         } else {
             utils.sendMessages(e.getChannel(), data, e.getAuthor(), input);

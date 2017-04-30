@@ -2,6 +2,7 @@ package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.Messages;
+import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
@@ -20,25 +21,26 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class CommandQueue extends Command {
-
-    private final Copycat copycat;
+public class CommandPrefix extends Command {
 
     /**
-     * Readies the queue command.
+     * Readies the prefix command.
      */
-    public CommandQueue() {
-        super("queue", "command.queue.description", Permission.MESSAGE_WRITE, "queue", false);
-        copycat = Copycat.getInstance();
+    public CommandPrefix() {
+        super("prefix", "command.prefix.description", Permission.MANAGE_SERVER, "prefix [new prefix]", false);
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        if(copycat.getQueue().containsKey(e.getGuild().getId())) {
-            int leftQueue = copycat.getQueue().get(e.getGuild().getId());
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.queue").replace("{messages}", String.valueOf(leftQueue))).queue();
+        if(args.length == 2) {
+            String prefix = Utils.getInstance().stripFormatting(args[1].replace("{space}", " "));
+            Copycat.getInstance().getDataManager().setGuildValue("prefix", e.getGuild().getId(), prefix);
+            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.prefix.set").replace("{prefix}", prefix)).queue();
+        } else if(args.length == 1) {
+            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.prefix.prefix").replace("{prefix}",
+                    Copycat.getInstance().getLocalGuilds().get(e.getGuild().getId()).getPrefix())).queue();
         } else {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.empty")).queue();
+            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
         }
     }
 

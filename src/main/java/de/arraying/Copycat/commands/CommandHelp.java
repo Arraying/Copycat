@@ -1,6 +1,7 @@
 package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.utils.UtilsEmbedBuilder;
 import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
@@ -25,66 +26,51 @@ public class CommandHelp extends Command {
 
     private final Copycat copycat;
     private final Utils utils;
-    private final UtilsEmbedBuilder embedBuilder, commandBuilder;
-    private boolean goneOver;
 
     /**
      * Creates all the Embeds that can be modified later on.
      */
     public CommandHelp() {
-        super("help", "Shows how you can play with me.", Permission.MESSAGE_WRITE, "help [command]", false);
+        super("help", "command.help.description", Permission.MESSAGE_WRITE, "help [command]", false);
         getAliases().add("commands");
         copycat = Copycat.getInstance();
         utils = Utils.getInstance();
-        embedBuilder = utils.getCopycatBuilder();
-        embedBuilder.setDescription("Hey! I'm Copycat. As you can tell, I copy people. I was made to send messages - in an advanced way. "+
-                "I don't ignore bots, they have feelings too, so you can hook me to them and make me do what they cannot do. "+
-                "However, my main role is to be an entertaining and loyal companion to all guilds.");
-        embedBuilder.addField("Usage", "You can do '{prefix}help <command>' for information. \n"+
-                "A list of commands is below.", false);
-        embedBuilder.addField("Commands", "{commands}", false);
-        embedBuilder.addField("Information", "- Developed by [{author}](http://arraying.de) in Java using [JDA](https://github.com/DV8FromTheWorld/JDA).\n"+
-                "- My code can be found [here](https://github.com/Wiildanimal/Copycat)\n"+
-                "- You can invite me [here](https://discordapp.com/oauth2/authorize?client_id=273121537132068884&scope=bot&permissions=27648)\n"+
-                "- Help can be found [here](http://guild.arraybot.xyz).", false);
-        embedBuilder.setFooter("Thank you to DinosParkour and Carbonitex.", null);
-        commandBuilder = utils.getCopycatBuilder();
-        commandBuilder.setDescription("Here is information for the command.");
-        commandBuilder.addField("Name", "An error occurred.", false);
-        commandBuilder.addField("Description", "An error occurred.", false);
-        commandBuilder.addField("Permission", "An error occurred.", false);
-        commandBuilder.addField("Syntax", "An error occurred.", false);
-        goneOver = false;
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        if(!goneOver) {
+        String prefix = copycat.getLocalGuilds().get(e.getGuild().getId()).getPrefix();
+        if(args.length == 1) {
+            UtilsEmbedBuilder embedBuilder = utils.getCopycatBuilder();
+            embedBuilder.setDescription(Messages.get(e.getGuild(), "command.help.h.description"));
+            embedBuilder.addField(Messages.get(e.getGuild(), "command.help.h.usage.title"),
+                    Messages.get(e.getGuild(), "command.help.h.usage.value").replace("{prefix}", prefix), false);
+            StringBuilder commandsBuilder = new StringBuilder();
+            copycat.getCommands().values().stream().filter(command -> !command.isAuthorOnly())
+                    .forEach(command -> commandsBuilder.append("- ").append(command.getName()).append("\n"));
+            embedBuilder.addField(Messages.get(e.getGuild(), "command.help.h.commands.title"), commandsBuilder.toString(), false);
             String author = copycat.getJda().getUserById(copycat.getDataConfig().getBotAuthor()).getName()+"#"+
                     copycat.getJda().getUserById(copycat.getDataConfig().getBotAuthor()).getDiscriminator();
-            embedBuilder.replaceFieldValue("Information", "{author}", author);
-            embedBuilder.replaceFieldValue("Usage", "{prefix}", copycat.getDataConfig().getBotPrefix());
-            StringBuilder stringBuilder = new StringBuilder();
-            copycat.getCommands().values().stream().filter(command -> !command.isAuthorOnly())
-                    .forEach(command -> stringBuilder.append("- ").append(command.getName()).append("\n"));
-            embedBuilder.replaceFieldValue("Commands", "{commands}", stringBuilder.toString());
-            goneOver = true;
-        }
-        if(args.length == 1) {
+            embedBuilder.addField(Messages.get(e.getGuild(), "command.help.h.information.title"),
+                    Messages.get(e.getGuild(), "command.help.h.information.value").replace("{author}", author), false);
+            embedBuilder.setFooter(Messages.get(e.getGuild(), "command.help.h.footer"), null);
             e.getChannel().sendMessage(embedBuilder.build()).queue();
         } else if(args.length == 2) {
             if(copycat.getCommands().containsKey(args[1])) {
                 Command command = copycat.getCommands().get(args[1]);
-                commandBuilder.setFieldValue("Name", command.getName());
-                commandBuilder.setFieldValue("Description", command.getDescription());
-                commandBuilder.setFieldValue("Permission", command.getPermission().toString());
-                commandBuilder.setFieldValue("Syntax", copycat.getDataConfig().getBotPrefix()+command.getSyntax());
-                e.getChannel().sendMessage(commandBuilder.build()).queue();
+                UtilsEmbedBuilder embedBuilder = utils.getCopycatBuilder();
+                embedBuilder.setDescription(Messages.get(e.getGuild(), "command.help.i.description"));
+                embedBuilder.addField(Messages.get(e.getGuild(), "command.help.i.name.title"), command.getName(), false);
+                embedBuilder.addField(Messages.get(e.getGuild(), "command.help.i.cdescription.title"),
+                        Messages.get(e.getGuild(), command.getDescription()), false);
+                embedBuilder.addField(Messages.get(e.getGuild(), "command.help.i.permission.title"), command.getPermission().toString(), false);
+                embedBuilder.addField(Messages.get(e.getGuild(), "command.help.i.syntax.title"), prefix+command.getSyntax(), false);
+                e.getChannel().sendMessage(embedBuilder.build()).queue();
             } else {
-                e.getChannel().sendMessage("I don't recognise that command. Do '"+copycat.getDataConfig().getBotPrefix()+"help' for a list of commands.");
+                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.help.unknown").replace("{prefix}", prefix));
             }
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage()).queue();
+            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
         }
     }
 

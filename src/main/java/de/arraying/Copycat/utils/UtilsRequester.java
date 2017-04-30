@@ -51,12 +51,18 @@ public class UtilsRequester {
         if(!copycat.getDataConfig().isBotBeta()) {
             String carbonitex = copycat.getDataConfig().getKeyCarbonitex();
             String discordBots = copycat.getDataConfig().getKeyBotsDiscordPw();
+            String discordBotsOrg = copycat.getDataConfig().getKeyDiscordBotsOrg();
             Unirest.post("https://www.carbonitex.net/discord/data/botdata.php")
                     .header("Content-Type", "application/json")
                     .body(new JSONObject().put("key", carbonitex).put("servercount", servercount))
                     .asString();
             Unirest.post("https://bots.discord.pw/api/bots/"+botId+"/stats")
                     .header("Authorization", discordBots)
+                    .header("Content-Type", "application/json")
+                    .body(new JSONObject().put("server_count", servercount))
+                    .asString();
+            Unirest.post("https://discordbots.org/api/bots/"+botId+"/stats")
+                    .header("Authorization", discordBotsOrg)
                     .header("Content-Type", "application/json")
                     .body(new JSONObject().put("server_count", servercount))
                     .asString();

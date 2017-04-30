@@ -5,6 +5,9 @@ import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Copyright 2017 Arraying
  * <p>
@@ -20,26 +23,26 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class CommandQueue extends Command {
-
-    private final Copycat copycat;
+public class CommandCleanup extends Command {
 
     /**
-     * Readies the queue command.
+     * Readies the cleanup command.
      */
-    public CommandQueue() {
-        super("queue", "command.queue.description", Permission.MESSAGE_WRITE, "queue", false);
-        copycat = Copycat.getInstance();
+    public CommandCleanup() {
+        super("cleanup", "command.cleanup.description", Permission.MESSAGE_WRITE, "cleanup", true);
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        if(copycat.getQueue().containsKey(e.getGuild().getId())) {
-            int leftQueue = copycat.getQueue().get(e.getGuild().getId());
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.queue").replace("{messages}", String.valueOf(leftQueue))).queue();
-        } else {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.empty")).queue();
+        if(Copycat.getInstance().getDataConfig().isBotBeta()) {
+            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.cleanup.beta")).queue();
+            return;
         }
+        List<String> unused = new ArrayList<>(Copycat.getInstance().getLocalGuilds().keySet());
+        Copycat.getInstance().getJda().getGuilds().forEach(guild -> unused.remove(guild.getId()));
+        unused.forEach(id -> Copycat.getInstance().getDataManager().removeGuild(id));
+        e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.cleanup.cleanup")
+                .replace("{guilds}", String.valueOf(unused.size()))).queue();
     }
 
 }

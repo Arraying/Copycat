@@ -1,6 +1,7 @@
 package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.SimpleLog;
@@ -33,7 +34,7 @@ public class CommandEval extends Command {
      * Readies the eval engine, using Nashorn.
      */
     public CommandEval() {
-        super("eval", "Allows me to execute crazy things.", Permission.MESSAGE_WRITE, "eval <code>", true);
+        super("eval", "command.eval.description", Permission.MESSAGE_WRITE, "eval <code>", true);
         getAliases().add("evaluate");
         getAliases().add("exec");
         getAliases().add("execute");
@@ -60,23 +61,22 @@ public class CommandEval extends Command {
             try {
                 output = scriptEngine.eval("(function() { with (imports) {\n" + input + "\n} })();");
             } catch (ScriptException ex) {
-                e.getChannel().sendMessage("An error occurred: "+ex.getMessage()).queue();
+                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.eval.error")+ex.getMessage()).queue();
                 return;
             }
             String outputString;
             if(output == null) {
-                outputString = "I have executed that successfully.";
+                outputString = Messages.get(e.getGuild(), "command.eval.output");
             } else {
                 outputString = output.toString();
                 if(outputString.length() >= 2048) {
-                    e.getChannel().sendMessage("I was going to send you the output along with a selfie,"+
-                            " but my cuteness overload isn't supported by Discord.").queue();
+                    e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.eval.length")).queue();
                     return;
                 }
             }
             e.getChannel().sendMessage(outputString).queue();
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage()).queue();
+            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
         }
     }
 

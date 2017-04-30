@@ -41,20 +41,28 @@ public class ListenerChat extends ListenerAdapter {
      */
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
-        String command = e.getMessage().getRawContent().toLowerCase();
+        String command = e.getMessage().getRawContent();
         if(!PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_WRITE)
                 || !PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getMember(e.getJDA().getSelfUser()), Permission.MESSAGE_EMBED_LINKS)
-                || !command.startsWith(copycat.getDataConfig().getBotPrefix())
                 || e.getAuthor() == null
                 || e.getChannel() == null
-                || e.getAuthor().getId().equalsIgnoreCase(e.getJDA().getSelfUser().getId())) {
+                || e.getAuthor().getId().equalsIgnoreCase(e.getJDA().getSelfUser().getId())
+                || !copycat.getDataManager().checkSync(e)) {
             return;
         }
-        command = command.substring(copycat.getDataConfig().getBotPrefix().length());
         command = command.replaceAll(" +", " ");
+        String prefix = copycat.getLocalGuilds().get(e.getGuild().getId()).getPrefix().toLowerCase();
+        if(command.toLowerCase().startsWith(copycat.getDataConfig().getBotPrefix().toLowerCase())) {
+            command = command.substring(copycat.getDataConfig().getBotPrefix().length());
+        } else if(command.toLowerCase().startsWith(prefix)) {
+            command = command.substring(prefix.length());
+        } else {
+            return;
+        }
         String[] parts = command.split(" ");
+        String finalCommand = parts[0].toLowerCase();
         Command commandObject = copycat.getCommands().values().stream()
-                .filter(cmd -> cmd.getName().equalsIgnoreCase(parts[0]) || cmd.getAliases().contains(parts[0]))
+                .filter(cmd -> cmd.getName().equalsIgnoreCase(finalCommand) || cmd.getAliases().contains(finalCommand))
                 .findFirst().orElse(null);
         if(commandObject != null) {
             commandObject.execute(e, parts);

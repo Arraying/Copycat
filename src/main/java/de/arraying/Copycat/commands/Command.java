@@ -1,8 +1,10 @@
 package de.arraying.Copycat.commands;
 
 import de.arraying.Copycat.Copycat;
+import de.arraying.Copycat.Messages;
 import lombok.Data;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 import net.dv8tion.jda.core.utils.SimpleLog;
@@ -78,19 +80,20 @@ public @Data abstract class Command {
                 Copycat.getInstance().getLogger()
                         .log(SimpleLog.Level.INFO,e.getMember().getUser().getName()+" executed "+name+" in "+e.getGuild().getName()+".");
             } else {
-                e.getChannel().sendMessage("You do not have permission to execute this command, you require "+permission.toString()+".");
+                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.noperm").replace("{permission}", permission.toString())).queue();
             }
         } else {
-            e.getChannel().sendMessage("That command is currently disabled, sorry for the inconvenience.").queue();
+            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.disabled")).queue();
         }
     }
 
     /**
      * Get the no syntax message.
+     * @param guild The guild.
      * @return The message.
      */
-    public String getSyntaxMessage() {
-        return "Incorrect syntax. Do '"+Copycat.getInstance().getDataConfig().getBotPrefix()+syntax+"'.";
+    public String getSyntaxMessage(Guild guild) {
+        return Messages.get(guild, "command.syntax").replace("{syntax}", getSyntax());
     }
 
 }

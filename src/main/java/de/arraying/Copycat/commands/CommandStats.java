@@ -1,5 +1,6 @@
 package de.arraying.Copycat.commands;
 
+import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.utils.UtilsEmbedBuilder;
 import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
@@ -23,30 +24,29 @@ import org.apache.commons.io.FileUtils;
  */
 public class CommandStats extends Command {
 
-    private UtilsEmbedBuilder embedBuilder;
-
     /**
      * Readies the stats command.
      */
     public CommandStats() {
-        super("stats", "Shows my statistics.", Permission.MESSAGE_WRITE, "stats", false);
+        super("stats", "command.stats.description", Permission.MESSAGE_WRITE, "stats", false);
         getAliases().add("statistics");
         getAliases().add("info");
-        embedBuilder = Utils.getInstance().getCopycatBuilder();
-        embedBuilder.setDescription("Here are the statistics for Copycat.\n"+
-                "Information can be found using the help command.");
-        embedBuilder.addField("I am meowing alongside...", "An error occurred.", false);
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+        UtilsEmbedBuilder embedBuilder = Utils.getInstance().getCopycatBuilder();
+        embedBuilder.setDescription(Messages.get(e.getGuild(), "command.stats.s.description"));
         long memoryUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         String memory = FileUtils.byteCountToDisplaySize(memoryUsage);
-        embedBuilder.setFieldValue("I am meowing alongside...", "... "+e.getJDA().getGuilds().size()+" guilds.\n"+
-                "... "+e.getJDA().getUsers().size()+" users.\n"+
-                "... "+(e.getJDA().getVoiceChannels().size()+e.getJDA().getTextChannels().size())+" channels.\n"+
-                "... "+memory+" memory used.\n"+
-                "... a lot of friends.");
+        int channels = e.getJDA().getTextChannels().size() + e.getJDA().getVoiceChannels().size();
+        embedBuilder.addField(Messages.get(e.getGuild(), "command.stats.s.main.title"),
+                Messages.get(e.getGuild(), "command.stats.s.main.value")
+                .replace("{guilds}", String.valueOf(e.getJDA().getGuilds().size()))
+                .replace("{users}", String.valueOf(e.getJDA().getUsers().size()))
+                .replace("{channels}", String.valueOf(channels))
+                .replace("{memory}", memory)
+                , false);
         e.getChannel().sendMessage(embedBuilder.build()).queue();
     }
 

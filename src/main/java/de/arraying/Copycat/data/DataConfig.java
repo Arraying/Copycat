@@ -25,8 +25,14 @@ public @Data class DataConfig {
     private final String botPrefix;
     private final String botVersion;
     private final boolean botBeta;
+    private final String mySQLHost;
+    private final String mySQLDatabase;
+    private final String mySQLUsername;
+    private final String mySQLPassword;
+    private final String mySQLGuildsTable;
     private final String keyCarbonitex;
     private final String keyBotsDiscordPw;
+    private final String keyDiscordBotsOrg;
 
     /**
      * The local config objects file for the bot.
@@ -36,19 +42,32 @@ public @Data class DataConfig {
      * @param botPrefix The prefix the bot will use.
      * @param botVersion The version of the bot.
      * @param botBeta Whether or not the bot should use the beta token.
+     * @param mySQLHost The host name of the MySQL database.
+     * @param mySQLDatabase The database name of the MySQL database.
+     * @param mySQLUsername The username of the MySQL database.
+     * @param mySQLPassword The password of the MySQL database.
+     * @param mySQLGuildsTable The name of the table where guilds will be stored in.
      * @param keyCarbonitex The Carbonitex API key.
      * @param keyBotsDiscordPw The bots.discord.pw API key.
+     * @param keyDiscordBotsOrg The discordbots.org API key.
      */
     public DataConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta,
-                      String keyCarbonitex, String keyBotsDiscordPw) {
+                      String mySQLHost, String mySQLDatabase, String mySQLUsername, String mySQLPassword, String mySQLGuildsTable,
+                      String keyCarbonitex, String keyBotsDiscordPw, String keyDiscordBotsOrg) {
         this.botToken = botToken;
         this.botBetaToken = botBetaToken;
         this.botAuthor = botAuthor;
         this.botPrefix = botPrefix;
         this.botVersion = botVersion;
         this.botBeta = botBeta;
+        this.mySQLHost = mySQLHost;
+        this.mySQLDatabase = mySQLDatabase;
+        this.mySQLUsername = mySQLUsername;
+        this.mySQLPassword = mySQLPassword;
+        this.mySQLGuildsTable = mySQLGuildsTable;
         this.keyCarbonitex = keyCarbonitex;
         this.keyBotsDiscordPw = keyBotsDiscordPw;
+        this.keyDiscordBotsOrg = keyDiscordBotsOrg;
     }
 
 }

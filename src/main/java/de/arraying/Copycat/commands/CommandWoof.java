@@ -1,5 +1,6 @@
 package de.arraying.Copycat.commands;
 
+import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
@@ -24,15 +25,16 @@ public class CommandWoof extends Command {
      * Readies the woof command.
      */
     public CommandWoof() {
-        super("woof", "Checks how fast I can meow back.", Permission.MESSAGE_WRITE, "woof", false);
+        super("woof", "command.woof.description", Permission.MESSAGE_WRITE, "woof", false);
         getAliases().add("ping");
     }
 
     @Override
     public void onCommand(GuildMessageReceivedEvent e, String[] args) {
         long before = System.currentTimeMillis();
-        e.getChannel().sendMessage("Did I hear a dog?")
-                .queue(message -> message.editMessage("Meow ("+(System.currentTimeMillis()-before)+"ms)!").queue());
+        e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.woof.before"))
+                .queue(message -> message.editMessage(Messages.get(e.getGuild(), "command.woof.after")
+                .replace("{ping}", String.valueOf((System.currentTimeMillis()-before)))).queue());
     }
 
 }
