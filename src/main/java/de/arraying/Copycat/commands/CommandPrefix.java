@@ -4,6 +4,8 @@ import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 /**
@@ -23,24 +25,37 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  */
 public class CommandPrefix extends Command {
 
+    private final Copycat copycat;
+
     /**
      * Readies the prefix command.
+     * The prefix command enables the guild to change
+     * the bot's prefix to whatever they desire.
      */
     public CommandPrefix() {
         super("prefix", "command.prefix.description", Permission.MANAGE_SERVER, "prefix [new prefix]", false);
+        this.copycat = Copycat.getInstance();
     }
 
+    /**
+     * Invokes the prefix command. Either displays the prefix or
+     * updates the prefix to the given value.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
         if(args.length == 2) {
             String prefix = Utils.getInstance().stripFormatting(args[1].replace("{space}", " "));
-            Copycat.getInstance().getDataManager().setGuildValue("prefix", e.getGuild().getId(), prefix);
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.prefix.set").replace("{prefix}", prefix)).queue();
+            copycat.getDataManager().setGuildValue("prefix", guild.getId(), prefix);
+            channel.sendMessage(Messages.get(guild, "command.prefix.set").replace("{prefix}", prefix)).queue();
         } else if(args.length == 1) {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.prefix.prefix").replace("{prefix}",
-                    Copycat.getInstance().getLocalGuilds().get(e.getGuild().getId()).getPrefix())).queue();
+            channel.sendMessage(Messages.get(guild, "command.prefix.prefix").replace("{prefix}",
+                    copycat.getLocalGuilds().get(guild.getId()).getPrefix())).queue();
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
+            channel.sendMessage(getSyntaxMessage(guild)).queue();
         }
     }
 

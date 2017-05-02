@@ -26,23 +26,29 @@ import net.dv8tion.jda.core.utils.PermissionUtil;
 public class ParameterPrivateMessageId extends Parameter {
 
     /**
-     * The private message ID parameter (-pmid) adds
+     * The private message ID parameter (--pmid) adds
      * a specified user to the user receivers.
      */
     public ParameterPrivateMessageId() {
-        super("-pmid");
+        super("--pmid");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        DataSayValues data = DataSay.retrieve(e.getMessage().getId());
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        DataSayValues data = DataSay.retrieve(event.getMessage().getId());
         String value = Utils.getInstance().getParameterValue(input, getTrigger());
         if(!value.equalsIgnoreCase("")
-                && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-            User user = e.getGuild().getMemberById(value).getUser();
+                && PermissionUtil.checkPermission(event.getChannel(), event.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
+            User user = event.getGuild().getMemberById(value).getUser();
             if(user != null
                     && !data.getUserReceivers().contains(user.getId())
-                    && !e.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
+                    && !event.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
                 data.getUserReceivers().add(user.getId());
             }
         }

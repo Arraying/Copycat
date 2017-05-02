@@ -1,5 +1,6 @@
 package de.arraying.Copycat;
 
+import de.arraying.Copycat.data.DataGuild;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
@@ -7,6 +8,8 @@ import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Copyright 2017 Arraying
@@ -25,62 +28,70 @@ import java.util.*;
  */
 public class Messages {
 
-    private static HashMap<String, ResourceBundle> languages;
+    private static final HashMap<String, ResourceBundle> LANGUAGES = new HashMap<>();
+    private static final Copycat COPYCAT = Copycat.getInstance();
+    private static final Pattern FILE_NAME = Pattern.compile("^Language_[a-z]{2,4}_[A-Z]{2,4}\\.properties$");
 
     /**
      * Initialises the messages.
      */
-    public static void init() {
+    static void init() {
         try {
             File dir = new File("locales");
             if(!dir.exists()) {
-                Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "The languages are not present, shutting down.");
-                System.exit(1);
+                COPYCAT.getLogger().log(SimpleLog.Level.FATAL, "The \"locales\" folder is not present.");
+                return;
             }
-            languages = new HashMap<>();
-            String prefix = "Language_";
-            String suffix = ".properties";
             URL[] urls = {dir.toURI().toURL()};
             ClassLoader loader = new URLClassLoader(urls);
             for(File file : dir.listFiles()) {
-                if(file.getName().startsWith(prefix)
-                        && file.getName().endsWith(suffix)) {
-                    String name = file.getName().substring(prefix.length(), file.getName().indexOf(suffix));
-                    String[] parts = name.split("_");
-                    Locale locale = new Locale(parts[0], parts[1]);
-                    ResourceBundle resourceBundle = ResourceBundle.getBundle("Language", locale, loader);
-                    languages.put(parts[0], resourceBundle);
-                    Copycat.getInstance().getLogger().log(SimpleLog.Level.INFO, "Registered the language \""+parts[0]+"_"+parts[1]+"\".");
+                String name = file.getName();
+                Matcher matcher = FILE_NAME.matcher(name);
+                if(!matcher.find()) {
+                    continue;
                 }
+                name = name.substring(9, name.indexOf(".properties"));
+                String[] parts = name.split("_");
+                String language = parts[0];
+                String region = parts[1];
+                LANGUAGES.put(language, ResourceBundle.getBundle("Language", new Locale(language, region), loader));
+                COPYCAT.getLogger().log(SimpleLog.Level.INFO, "Registered the language \""+language+"\" with the region \""+region+"\".");
             }
-            if(languages.isEmpty()) {
-                Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "No valid languages were found, shutting down.");
+            if(LANGUAGES.isEmpty()) {
+                COPYCAT.getLogger().log(SimpleLog.Level.FATAL, "No valid languages were found, shutting down.");
                 System.exit(1);
             }
-        } catch(Exception e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "An error occurred loading in the languages: "+e.getMessage());
+        } catch(Exception exception) {
+            COPYCAT.getLogger().log(SimpleLog.Level.FATAL, "An error occurred loading in the languages: "+exception.getMessage());
+            throw new IllegalStateException("No valid languages have been found.");
         }
     }
 
     /**
-     * Gets the message for a spesific language.
+     * Gets the message in the correct language
+     * according to the guild specified.
      * @param guild The guild.
      * @param message Properties message path.
      * @return A valid message string.
      */
     public static String get(Guild guild, String message) {
-        String locale = Copycat.getInstance().getLocalGuilds().get(guild.getId()).getLanguage();
-        if(locale == null
-            || !languages.containsKey(locale.toLowerCase())) {
+        String locale;
+        DataGuild localGuild = COPYCAT.getLocalGuilds().get(guild.getId());
+        if(localGuild == null
+            || localGuild.getLanguage() == null
+            || !LANGUAGES.containsKey(localGuild.getLanguage().toLowerCase())) {
             locale = "en";
-            Copycat.getInstance().getDataManager().setGuildValue("language", guild.getId(), "en");
+        } else {
+            locale = localGuild.getLanguage();
         }
         try {
-            return languages.get(locale).getString(message);
-        } catch(MissingResourceException e) {
+            return locale.equalsIgnoreCase("de") ?
+                    LANGUAGES.get("de").getString(message) :
+                    new String(LANGUAGES.get(locale).getString(message).getBytes("ISO-8859-1"), "UTF-8");
+        } catch(Exception e) {
             try {
-                return languages.get("en").getString(message);
-            } catch(MissingResourceException ex) {
+                return LANGUAGES.get("en").getString(message);
+            } catch(Exception ex) {
                 return "UNKNOWN_STRING";
             }
         }
@@ -91,7 +102,7 @@ public class Messages {
      * @return A set of language keys.
      */
     public static Set<String> getLanguages() {
-        return languages.keySet();
+        return LANGUAGES.keySet();
     }
 
 }

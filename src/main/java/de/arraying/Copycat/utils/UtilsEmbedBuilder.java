@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class UtilsEmbedBuilder extends EmbedBuilder {
 
-    private Field fieldsField;
+    private final Field fieldsField;
     private List<MessageEmbed.Field> fields;
 
     /**
@@ -34,8 +34,8 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
             fieldsField = EmbedBuilder.class.getDeclaredField("fields");
             fieldsField.setAccessible(true);
             pullUpdate();
-        } catch(NoSuchFieldException e) {
-            e.printStackTrace();
+        } catch(NoSuchFieldException exception) {
+            throw new IllegalStateException("The embed builder caused an error, hence it could not be initialised.");
         }
     }
 
@@ -48,7 +48,7 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
         pullUpdate();
         List<MessageEmbed.Field> toRemvove = new ArrayList<>();
         fields.stream().filter(fStream -> fStream.getName().equalsIgnoreCase(title))
-                .forEach(fStream -> toRemvove.add(fStream));
+                .forEach(toRemvove::add);
         fields.removeAll(toRemvove);
         pushUpdate();
         return this;
@@ -73,8 +73,8 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
                         Field fStreamField = fStream.getClass().getDeclaredField("value");
                         fStreamField.setAccessible(true);
                         fStreamField.set(fStream, finalValue);
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    } catch (NoSuchFieldException | IllegalAccessException exception) {
+                        exception.printStackTrace();
                     }
                 });
         return this;
@@ -95,9 +95,15 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
                         Field fStreamField = fStream.getClass().getDeclaredField("value");
                         fStreamField.setAccessible(true);
                         String value = (String) fStreamField.get(fStream);
-                        fStreamField.set(fStream, value.replace(from, to));
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        e.printStackTrace();
+                        String checkValue = value.replace(from, to);
+                        if(checkValue.length() > 1024) {
+                            checkValue = checkValue.substring(value.length()-6);
+                            checkValue += "[...]";
+                        }
+                        String finalValue = checkValue;
+                        fStreamField.set(fStream, finalValue);
+                    } catch (NoSuchFieldException | IllegalAccessException exception) {
+                        exception.printStackTrace();
                     }
                 });
         return this;
@@ -117,8 +123,8 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
                         Field fStreamField = fStream.getClass().getDeclaredField("inline");
                         fStreamField.setAccessible(true);
                         fStreamField.set(fStream, inline);
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        e.printStackTrace();
+                    } catch (NoSuchFieldException | IllegalAccessException exception) {
+                        exception.printStackTrace();
                     }
                 });
         return this;
@@ -130,8 +136,8 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
     private void pullUpdate() {
         try {
             fields = (List<MessageEmbed.Field>) fieldsField.get(this);
-        } catch(IllegalAccessException e) {
-            e.printStackTrace();
+        } catch(IllegalAccessException exception) {
+            exception.printStackTrace();
         }
     }
 
@@ -141,8 +147,8 @@ public class UtilsEmbedBuilder extends EmbedBuilder {
     private void pushUpdate() {
         try {
             fieldsField.set(this, fields);
-        } catch(IllegalAccessException e) {
-            e.printStackTrace();
+        } catch(IllegalAccessException exception) {
+            exception.printStackTrace();
         }
     }
 

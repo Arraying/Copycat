@@ -32,10 +32,10 @@ public abstract @Data class Parameter {
 
     /**
      * What happens when the parameter is present.
-     * @param e The chat event.
+     * @param event The chat event.
      * @param input The current input.
      * @return The input, after modification.
      */
-    public abstract String invoke(GuildMessageReceivedEvent e, String input);
+    public abstract String invoke(GuildMessageReceivedEvent event, String input);
 
 }

@@ -3,6 +3,7 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -25,23 +26,37 @@ import java.util.List;
  */
 public class CommandCleanup extends Command {
 
+    private final Copycat copycat;
+
     /**
      * Readies the cleanup command.
+     * The cleanup commands removes redundantly cached
+     * guilds from the local cache and database.
+     * These caches are caused by downtime.
      */
     public CommandCleanup() {
         super("cleanup", "command.cleanup.description", Permission.MESSAGE_WRITE, "cleanup", true);
+        this.copycat = Copycat.getInstance();
     }
 
+    /**
+     * Invokes a cleanup command which will execute the cleanup task.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        Guild guild = event.getGuild();
         if(Copycat.getInstance().getDataConfig().isBotBeta()) {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.cleanup.beta")).queue();
+            event.getChannel().sendMessage(Messages.get(guild, "command.cleanup.beta")).queue();
             return;
         }
         List<String> unused = new ArrayList<>(Copycat.getInstance().getLocalGuilds().keySet());
-        Copycat.getInstance().getJda().getGuilds().forEach(guild -> unused.remove(guild.getId()));
-        unused.forEach(id -> Copycat.getInstance().getDataManager().removeGuild(id));
-        e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.cleanup.cleanup")
+        Copycat.getInstance().getJda().getGuilds().forEach(jdaGuild -> unused.remove(jdaGuild.getId()));
+        for(String guildId : unused) {
+            copycat.getDataManager().removeGuild(guildId);
+        }
+        event.getChannel().sendMessage(Messages.get(guild, "command.cleanup.cleanup")
                 .replace("{guilds}", String.valueOf(unused.size()))).queue();
     }
 

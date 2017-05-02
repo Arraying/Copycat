@@ -3,7 +3,10 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Messages;
 import de.arraying.Copycat.utils.UtilsEmbedBuilder;
 import de.arraying.Copycat.utils.Utils;
+import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.commons.io.FileUtils;
 
@@ -26,28 +29,41 @@ public class CommandStats extends Command {
 
     /**
      * Readies the stats command.
+     * The statistics command shows general bot
+     * statistics, however no information.
      */
     public CommandStats() {
         super("stats", "command.stats.description", Permission.MESSAGE_WRITE, "stats", false);
-        getAliases().add("statistics");
-        getAliases().add("info");
+        this.getAliases().add("statistics");
+        this.getAliases().add("info");
     }
 
+    /**
+     * Invokes the stats command. It sends a statistics embed
+     * to the current text channel.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        JDA jda = event.getJDA();
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
         UtilsEmbedBuilder embedBuilder = Utils.getInstance().getCopycatBuilder();
-        embedBuilder.setDescription(Messages.get(e.getGuild(), "command.stats.s.description"));
-        long memoryUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        embedBuilder.setDescription(Messages.get(guild, "command.stats.s.description"));
+        long memoryUsage = Runtime.getRuntime().totalMemory() -
+                Runtime.getRuntime().freeMemory();
         String memory = FileUtils.byteCountToDisplaySize(memoryUsage);
-        int channels = e.getJDA().getTextChannels().size() + e.getJDA().getVoiceChannels().size();
-        embedBuilder.addField(Messages.get(e.getGuild(), "command.stats.s.main.title"),
-                Messages.get(e.getGuild(), "command.stats.s.main.value")
-                .replace("{guilds}", String.valueOf(e.getJDA().getGuilds().size()))
-                .replace("{users}", String.valueOf(e.getJDA().getUsers().size()))
-                .replace("{channels}", String.valueOf(channels))
-                .replace("{memory}", memory)
+        int channels = jda.getTextChannels().size() +
+               jda.getVoiceChannels().size();
+        embedBuilder.addField(Messages.get(guild, "command.stats.s.main.title"),
+                Messages.get(guild, "command.stats.s.main.value")
+                    .replace("{guilds}", String.valueOf(jda.getGuilds().size()))
+                    .replace("{users}", String.valueOf(jda.getUsers().size()))
+                    .replace("{channels}", String.valueOf(channels))
+                    .replace("{memory}", memory)
                 , false);
-        e.getChannel().sendMessage(embedBuilder.build()).queue();
+        channel.sendMessage(embedBuilder.build()).queue();
     }
 
 }

@@ -4,6 +4,7 @@ import de.arraying.Copycat.data.DataSay;
 import de.arraying.Copycat.data.DataSayValues;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
@@ -26,28 +27,35 @@ import net.dv8tion.jda.core.utils.PermissionUtil;
 public class ParameterPrivateMessage extends Parameter {
 
     /**
-     * The private message parameter (-pm) adds
+     * The private message parameter (--pm) adds
      * a mentioned user to the user receivers.
      */
     public ParameterPrivateMessage() {
-        super("-pm ");
+        super("--pm ");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        DataSayValues data = DataSay.retrieve(e.getMessage().getId());
-        if(!e.getMessage().getMentionedUsers().isEmpty()
-                && PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
-            e.getMessage().getMentionedUsers().forEach(user -> {
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        Message message = event.getMessage();
+        DataSayValues data = DataSay.retrieve(message.getId());
+        if(!message.getMentionedUsers().isEmpty()
+                && PermissionUtil.checkPermission(event.getChannel(), event.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
+            message.getMentionedUsers().forEach(user -> {
                 if(!data.getUserReceivers().contains(user.getId())
-                        && !e.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
+                        && !event.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
                     data.getUserReceivers().add(user.getId());
                 }
             });
         }
         input = input.replace(getTrigger(), "");
-        for(User user : e.getMessage().getMentionedUsers()) {
-            Member member = e.getGuild().getMember(user);
+        for(User user : message.getMentionedUsers()) {
+            Member member = event.getGuild().getMember(user);
             if(member.getNickname() != null) {
                 input = input.replace("<@!"+user.getId()+">", "");
             } else {

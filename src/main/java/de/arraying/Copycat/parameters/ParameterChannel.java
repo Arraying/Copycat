@@ -3,6 +3,7 @@ package de.arraying.Copycat.parameters;
 import de.arraying.Copycat.data.DataSay;
 import de.arraying.Copycat.data.DataSayValues;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
@@ -25,26 +26,33 @@ import net.dv8tion.jda.core.utils.PermissionUtil;
 public class ParameterChannel extends Parameter {
 
     /**
-     * The channel parameter (-c) adds a mentioned
+     * The channel parameter (--c) adds a mentioned
      * text channel to the list of channel receivers.
      */
     public ParameterChannel() {
-        super("-c ");
+        super("--c ");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        DataSayValues data = DataSay.retrieve(e.getMessage().getId());
-        if(!e.getMessage().getMentionedChannels().isEmpty()) {
-            e.getMessage().getMentionedChannels().forEach(channel -> {
-                if(PermissionUtil.checkPermission(channel, e.getMember(), Permission.MESSAGE_WRITE)
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        Message message = event.getMessage();
+        DataSayValues data = DataSay.retrieve(message.getId());
+        if(!message.getMentionedChannels().isEmpty()) {
+            message.getMentionedChannels().forEach(channel -> {
+                if(PermissionUtil.checkPermission(channel, event.getMember(), Permission.MESSAGE_WRITE)
                         && !data.getChannelReceivers().contains(channel.getId())) {
                     data.getChannelReceivers().add(channel.getId());
                 }
             });
         }
         input = input.replace(getTrigger(), "");
-        for(TextChannel textChannel : e.getMessage().getMentionedChannels()) {
+        for(TextChannel textChannel : message.getMentionedChannels()) {
             input = input.replace("<#"+textChannel.getId()+">", "");
         }
         return input;

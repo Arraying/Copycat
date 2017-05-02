@@ -148,10 +148,20 @@ public class Copycat {
         }
         logger.log(SimpleLog.Level.INFO, "Caching all the guilds...");
         localGuilds = new HashMap<>();
-        dataManager = new DataManager();
-        dataManager.cacheGuilds();
+        try {
+            dataManager = new DataManager();
+            dataManager.cacheGuilds();
+        } catch(IllegalStateException exception) {
+            logger.log(SimpleLog.Level.FATAL, "An exception occurred starting the database manager: "+exception.getMessage());
+            return;
+        }
         logger.log(SimpleLog.Level.INFO, "Loading in all the languages...");
-        Messages.init();
+        try {
+            Messages.init();
+        } catch(IllegalStateException exception) {
+            logger.log(SimpleLog.Level.FATAL, "Unable to start the bot due to a language error.");
+            return;
+        }
         logger.log(SimpleLog.Level.INFO, "Registering all commands...");
         commands = new TreeMap<>();
         Reflections reflections = new Reflections("de.arraying.Copycat.commands");
@@ -160,7 +170,7 @@ public class Copycat {
                 Command command = subclass.newInstance();
                 commands.put(command.getName(), command);
                 logger.log(SimpleLog.Level.INFO, "Registered the command \""+command.getName()+"\".");
-            } catch(InstantiationException | IllegalAccessException e) {
+            } catch(InstantiationException | IllegalAccessException exception) {
                 logger.log(SimpleLog.Level.FATAL, "Could not register \""+subclass.getSimpleName()+"\".");
             }
         });
@@ -171,7 +181,7 @@ public class Copycat {
                 Parameter parameter = subclass.newInstance();
                 parameters.add(parameter);
                 logger.log(SimpleLog.Level.INFO, "Registered the parameter \""+parameter.getTrigger()+"\"");
-            } catch(InstantiationException | IllegalAccessException e) {
+            } catch(InstantiationException | IllegalAccessException exception) {
                 logger.log(SimpleLog.Level.FATAL, "Could not register \""+subclass.getSimpleName()+"\".");
             }
         });
@@ -188,9 +198,9 @@ public class Copycat {
                      .addEventListener(new ListenerChat())
                      .addEventListener(new ListenerChange())
                      .buildBlocking();
-        } catch(LoginException | InterruptedException | RateLimitedException e) {
-            logger.log(SimpleLog.Level.FATAL, "The bot encountered an exception.");
-            e.printStackTrace();
+        } catch(LoginException | InterruptedException | RateLimitedException exception) {
+            logger.log(SimpleLog.Level.FATAL, "The bot encountered an exception: "+exception.getMessage());
+            return;
         }
     }
 

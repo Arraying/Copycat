@@ -2,9 +2,12 @@ package de.arraying.Copycat.listeners;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import de.arraying.Copycat.Copycat;
+import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 /**
  * Copyright 2017 Arraying
@@ -35,29 +38,35 @@ public class ListenerChange extends ListenerAdapter {
 
     /**
      * When the bot joins a guild.
-     * @param e The event instance.
+     * @param event The event instance.
      */
     @Override
-    public void onGuildJoin(GuildJoinEvent e) {
+    public void onGuildJoin(GuildJoinEvent event) {
+        JDA jda = event.getJDA();
+        Guild guild = event.getGuild();
         try {
-            copycat.getRequester().sendPostRequests(e.getJDA().getSelfUser().getId(), e.getJDA().getGuilds().size());
-            copycat.getDataManager().addGuild(e.getGuild().getId());
-        } catch(UnirestException ex) {
-            ex.printStackTrace();
+            copycat.getRequester().sendPostRequests(jda.getSelfUser().getId(), jda.getGuilds().size());
+            copycat.getDataManager().addGuild(guild.getId());
+        } catch(UnirestException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "An error occurred trying to post the bot statistics: " +
+                    exception.getMessage());
         }
     }
 
     /**
      * When the bot leaves a guild.
-     * @param e The event instance.
+     * @param event The event instance.
      */
     @Override
-    public void onGuildLeave(GuildLeaveEvent e) {
+    public void onGuildLeave(GuildLeaveEvent event) {
+        JDA jda = event.getJDA();
+        Guild guild = event.getGuild();
         try {
-            copycat.getRequester().sendPostRequests(e.getJDA().getSelfUser().getId(), e.getJDA().getGuilds().size());
-            copycat.getDataManager().removeGuild(e.getGuild().getId());
-        } catch(UnirestException ex) {
-            ex.printStackTrace();
+            copycat.getRequester().sendPostRequests(jda.getSelfUser().getId(), jda.getGuilds().size());
+            copycat.getDataManager().removeGuild(guild.getId());
+        } catch(UnirestException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "An error occurred trying to post the bot statistics: " +
+                    exception.getMessage());
         }
     }
 

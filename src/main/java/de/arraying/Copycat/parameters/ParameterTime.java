@@ -22,22 +22,28 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 public class ParameterTime extends Parameter {
 
     /**
-     * The time parameter (-t) sets a timer as to when
+     * The time parameter (--t) sets a timer as to when
      * the message should get sent.
      */
     public ParameterTime() {
-        super("-t");
+        super("--t");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
+    public String invoke(GuildMessageReceivedEvent event, String input) {
         String value = Utils.getInstance().getParameterValue(input, getTrigger());
         if(!value.equalsIgnoreCase("")) {
             if(Utils.getInstance().isInt(value)) {
                 int delay = Integer.valueOf(value);
                 if(delay > 0
                         && delay <= 3600) {
-                    DataSay.retrieve(e.getMessage().getId()).setDelay(delay);
+                    DataSay.retrieve(event.getMessage().getId()).setDelay(delay);
                 }
             }
         }

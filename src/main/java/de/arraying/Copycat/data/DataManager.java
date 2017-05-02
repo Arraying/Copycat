@@ -29,15 +29,16 @@ import java.sql.SQLException;
  */
 public class DataManager {
 
-    private HikariDataSource dataSource;
-    private String guildsTableName;
+    private final Copycat copycat;
+    private final HikariDataSource dataSource;
+    private final String guildsTableName;
 
     /**
      * Creates a new data manager object.
      */
     public DataManager() {
         try {
-            Copycat copycat = Copycat.getInstance();
+            this.copycat = Copycat.getInstance();
             this.guildsTableName = copycat.getDataConfig().getMySQLGuildsTable();
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl("jdbc:mysql://"+copycat.getDataConfig().getMySQLHost()+":3306/"+copycat.getDataConfig().getMySQLDatabase()+"?useSSL=false");
@@ -48,9 +49,8 @@ public class DataManager {
             config.setLeakDetectionThreshold(3000);
             this.dataSource = new HikariDataSource(config);
             readyDatabase();
-        } catch(Exception e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "An exception occurred setting up the database manager: "+e.getMessage());
-            System.exit(1);
+        } catch(Exception exception) {
+            throw new IllegalStateException("The database could not be initialised due to the following exception: "+exception.getMessage());
         }
     }
 
@@ -66,13 +66,13 @@ public class DataManager {
                 String prefix = resultSet.getString("prefix");
                 String language = resultSet.getString("language");
                 String footer = resultSet.getString("footer");
-                Copycat.getInstance().getLocalGuilds().put(id, new DataGuild(id, prefix, language, footer));
+                copycat.getLocalGuilds().put(id, new DataGuild(id, prefix, language, footer));
             }
             preparedStatement.getConnection().close();
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.INFO, "Caching complete, loaded in " +
-                    Copycat.getInstance().getLocalGuilds().size() + " guilds.");
-        } catch(SQLException e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "An error occurred caching in the guilds: "+e.getMessage());
+            copycat.getLogger().log(SimpleLog.Level.INFO, "Caching complete, loaded in " +
+                    copycat.getLocalGuilds().size() + " guilds.");
+        } catch(SQLException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "An error occurred caching in the guilds: "+exception.getMessage());
         }
     }
 
@@ -81,7 +81,7 @@ public class DataManager {
      * @param id The ID of the guild.
      */
     public void addGuild(String id) {
-        if(Copycat.getInstance().getLocalGuilds().containsKey(id)) {
+        if(copycat.getLocalGuilds().containsKey(id)) {
             return;
         }
         try {
@@ -90,15 +90,15 @@ public class DataManager {
                     ") VALUES ( " +
                     "?, ?" +
                     ");");
-            String prefix = Copycat.getInstance().getDataConfig().getBotPrefix();
+            String prefix = copycat.getDataConfig().getBotPrefix();
             preparedStatement.setString(1, id);
             preparedStatement.setString(2, prefix);
             preparedStatement.executeUpdate();
             preparedStatement.getConnection().close();
-            Copycat.getInstance().getLocalGuilds().put(id, new DataGuild(id, prefix, null, null));
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.INFO, "The guild "+id+" has been added.");
-        } catch(SQLException e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "An error occurred adding the guild "+id+": "+e.getMessage());
+            copycat.getLocalGuilds().put(id, new DataGuild(id, prefix, null, null));
+            copycat.getLogger().log(SimpleLog.Level.INFO, "The guild "+id+" has been added.");
+        } catch(SQLException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "An error occurred adding the guild "+id+": "+exception.getMessage());
         }
     }
 
@@ -107,7 +107,7 @@ public class DataManager {
      * @param id The ID of the guild.
      */
     public void removeGuild(String id) {
-        if(!Copycat.getInstance().getLocalGuilds().containsKey(id)) {
+        if(!copycat.getLocalGuilds().containsKey(id)) {
             return;
         }
         try {
@@ -115,10 +115,10 @@ public class DataManager {
             preparedStatement.setString(1, id);
             preparedStatement.executeUpdate();
             preparedStatement.getConnection().close();
-            Copycat.getInstance().getLocalGuilds().remove(id);
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.INFO, "The guild "+id+" has been removed.");
-        } catch(SQLException e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "An error occurred removing the guild "+id+": "+e.getMessage());
+            copycat.getLocalGuilds().remove(id);
+            copycat.getLogger().log(SimpleLog.Level.INFO, "The guild "+id+" has been removed.");
+        } catch(SQLException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "An error occurred removing the guild "+id+": "+exception.getMessage());
         }
     }
 
@@ -128,9 +128,9 @@ public class DataManager {
      * @return True if the guild is synced, false otherwise.
      */
     public boolean checkSync(GenericGuildMessageEvent e) {
-        if(!Copycat.getInstance().getLocalGuilds().containsKey(e.getGuild().getId())) {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "data.check.failsafe")).queue();
-            Copycat.getInstance().getDataManager().addGuild(e.getGuild().getId());
+        if(!copycat.getLocalGuilds().containsKey(e.getGuild().getId())) {
+            e.getChannel().sendMessage("You were not synced with my database, I have changed that.").queue();
+            copycat.getDataManager().addGuild(e.getGuild().getId());
             return false;
         }
         return true;
@@ -143,7 +143,7 @@ public class DataManager {
      * @param value  The new value of the field.
      */
     public void setGuildValue(String field, String guild, Object value) {
-        if(!Copycat.getInstance().getLocalGuilds().containsKey(guild)) {
+        if(!copycat.getLocalGuilds().containsKey(guild)) {
             return;
         }
         try {
@@ -153,11 +153,11 @@ public class DataManager {
             preparedStatement.setObject(1, value);
             preparedStatement.executeUpdate();
             preparedStatement.getConnection().close();
-            Field guildDataField = Copycat.getInstance().getLocalGuilds().get(guild).getClass().getDeclaredField(field);
+            Field guildDataField = copycat.getLocalGuilds().get(guild).getClass().getDeclaredField(field);
             guildDataField.setAccessible(true);
-            guildDataField.set(Copycat.getInstance().getLocalGuilds().get(guild), value);
-        } catch(SQLException | IllegalAccessException | NoSuchFieldException e) {
-            Copycat.getInstance().getLogger().log(SimpleLog.Level.FATAL, "Could not update the guild value: "+e.getMessage());
+            guildDataField.set(copycat.getLocalGuilds().get(guild), value);
+        } catch(SQLException | IllegalAccessException | NoSuchFieldException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "Could not update the guild value: "+exception.getMessage());
         }
     }
 

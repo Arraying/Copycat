@@ -21,16 +21,22 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 public class ParameterDelete extends Parameter {
 
     /**
-     * The delete parameter (-d) deletes the original
+     * The delete parameter (--d) deletes the original
      * command message.
      */
     public ParameterDelete() {
-        super("-d");
+        super("--d");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        DataSay.retrieve(e.getMessage().getId()).setDelete(true);
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        DataSay.retrieve(event.getMessage().getId()).setDelete(true);
         return input.replace(getTrigger(), "");
     }
 

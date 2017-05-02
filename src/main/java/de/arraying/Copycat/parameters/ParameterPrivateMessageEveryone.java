@@ -1,6 +1,7 @@
 package de.arraying.Copycat.parameters;
 
 import de.arraying.Copycat.data.DataSay;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
@@ -22,21 +23,28 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 public class ParameterPrivateMessageEveryone extends Parameter {
 
     /**
-     * The private message everyone parameter (-pme) sends
+     * The private message everyone parameter (--pme) sends
      * the message as a private message to everyone in the
      * guild.
      */
     public ParameterPrivateMessageEveryone() {
-        super("-pme");
+        super("--pme");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        e.getGuild().getMembers().forEach(member -> {
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        Message message = event.getMessage();
+        event.getGuild().getMembers().forEach(member -> {
             User user = member.getUser();
-            if(!DataSay.retrieve(e.getMessage().getId()).getUserReceivers().contains(user.getId())
-                    && !e.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
-                DataSay.retrieve(e.getMessage().getId()).getUserReceivers().add(user.getId());
+            if(!DataSay.retrieve(message.getId()).getUserReceivers().contains(user.getId())
+                    && !event.getJDA().getSelfUser().getId().equalsIgnoreCase(user.getId())) {
+                DataSay.retrieve(message.getId()).getUserReceivers().add(user.getId());
             }
         });
         return input.replace(getTrigger(), "");

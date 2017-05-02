@@ -5,6 +5,8 @@ import de.arraying.Copycat.Messages;
 import lombok.Data;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 import net.dv8tion.jda.core.utils.SimpleLog;
@@ -36,7 +38,7 @@ public @Data abstract class Command {
     private final ArrayList<String> aliases;
 
     /**
-     * The command object constructor.
+     * Creates a new command object.
      * @param name The name (trigger) of the command.
      * @param description The description of the command.
      * @param permission The permission required for the command.
@@ -54,36 +56,43 @@ public @Data abstract class Command {
     }
 
     /**
-     * The method that the command objects
-     * override which contains the command
-     * actions.
+     * The method that the command objects override. It contains
+     * the actual command of the code, and it is invoked when the
+     * command pre-processing is finished.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     *             It should always be the length of at least 1.
      */
-    public abstract void onCommand(GuildMessageReceivedEvent e, String[] args);
+    public abstract void onCommand(GuildMessageReceivedEvent event, String[] args);
 
     /**
-     * The method that takes care of command checks.
-     * @param e The event.
-     * @param args The arguments.
+     * This method pre-processes the command and does some routine
+     * checks so that they do not need to me repeated multiple times.
+     * @param event The message event.
+     * @param args The arguments, including the command itself.
      */
-    public void execute(GuildMessageReceivedEvent e, String[] args) {
+    public void execute(GuildMessageReceivedEvent event, String[] args) {
         if(description == null
                 || permission == null
                 || syntax == null) {
             return;
         }
+        Member member = event.getMember();
+        Guild guild = event.getGuild();
+        TextChannel channel = event.getChannel();
         if(enabled) {
-            if(authorOnly && !e.getMember().getUser().getId().equalsIgnoreCase(Copycat.getInstance().getDataConfig().getBotAuthor())) {
+            if(authorOnly && !member.getUser().getId().equalsIgnoreCase(Copycat.getInstance().getDataConfig().getBotAuthor())) {
                 return;
             }
-            if(PermissionUtil.checkPermission(e.getChannel(), e.getMember(), permission)) {
-                onCommand(e, args);
+            if(PermissionUtil.checkPermission(channel, member, permission)) {
+                onCommand(event, args);
                 Copycat.getInstance().getLogger()
-                        .log(SimpleLog.Level.INFO,e.getMember().getUser().getName()+" executed "+name+" in "+e.getGuild().getName()+".");
+                        .log(SimpleLog.Level.INFO,member.getUser().getName()+" executed "+name+" in "+guild.getName()+".");
             } else {
-                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.noperm").replace("{permission}", permission.toString())).queue();
+                channel.sendMessage(Messages.get(guild, "command.noperm").replace("{permission}", permission.toString())).queue();
             }
         } else {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.disabled")).queue();
+            channel.sendMessage(Messages.get(guild, "command.disabled")).queue();
         }
     }
 

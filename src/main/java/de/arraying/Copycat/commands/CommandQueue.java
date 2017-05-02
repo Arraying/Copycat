@@ -3,6 +3,8 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 /**
@@ -26,19 +28,30 @@ public class CommandQueue extends Command {
 
     /**
      * Readies the queue command.
+     * The queue command shows how many messages still
+     * need to be sent after executing the say command.
+     * The reason for this is Discord's ratelimit.
      */
     public CommandQueue() {
         super("queue", "command.queue.description", Permission.MESSAGE_WRITE, "queue", false);
-        copycat = Copycat.getInstance();
+        this.copycat = Copycat.getInstance();
     }
 
+    /**
+     * Invokes the queue command. It displays the amount of messages
+     * that are still in the queue.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
-        if(copycat.getQueue().containsKey(e.getGuild().getId())) {
-            int leftQueue = copycat.getQueue().get(e.getGuild().getId());
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.queue").replace("{messages}", String.valueOf(leftQueue))).queue();
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
+        if(copycat.getQueue().containsKey(guild.getId())) {
+            int leftQueue = copycat.getQueue().get(guild.getId());
+            channel.sendMessage(Messages.get(guild, "command.queue.queue").replace("{messages}", String.valueOf(leftQueue))).queue();
         } else {
-            e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.queue.empty")).queue();
+            channel.sendMessage(Messages.get(guild, "command.queue.empty")).queue();
         }
     }
 

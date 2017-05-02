@@ -21,17 +21,23 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 public class ParameterSilent extends Parameter {
 
     /**
-     * The silent parameter (-s) does not send the
+     * The silent parameter (--s) does not send the
      * "The message has been sent" message when
      * the message is sent.
      */
     public ParameterSilent() {
-        super("-s");
+        super("--s");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
-        DataSay.retrieve(e.getMessage().getId()).setSilent(true);
+    public String invoke(GuildMessageReceivedEvent event, String input) {
+        DataSay.retrieve(event.getMessage().getId()).setSilent(true);
         return input.replace(getTrigger(), "");
     }
 

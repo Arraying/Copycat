@@ -25,9 +25,15 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
  */
 public class CommandLanguage extends Command {
 
+    /**
+     * Readies the language command.
+     * The language command enables the the guild to change
+     * the language per-guild, thus making the bot more
+     * localised.
+     */
     public CommandLanguage() {
         super("language", "command.language.description", Permission.MANAGE_SERVER, "language [new language]", false);
-        getAliases().add("lang");
+        this.getAliases().add("lang");
     }
 
     @Override

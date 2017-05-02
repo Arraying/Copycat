@@ -26,21 +26,27 @@ import net.dv8tion.jda.core.utils.PermissionUtil;
 public class ParameterChannelId extends Parameter {
 
     /**
-     * The channel ID parameter (-cid) adds the specified
+     * The channel ID parameter (--cid) adds the specified
      * channel ID to the list of receivers.
      */
     public ParameterChannelId() {
-        super("-cid");
+        super("--cid");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
+    public String invoke(GuildMessageReceivedEvent event, String input) {
         String value = Utils.getInstance().getParameterValue(input, getTrigger());
-        DataSayValues data = DataSay.retrieve(e.getMessage().getId());
+        DataSayValues data = DataSay.retrieve(event.getMessage().getId());
         if(!value.equalsIgnoreCase("")) {
-            TextChannel textChannel = e.getGuild().getTextChannelById(value);
+            TextChannel textChannel = event.getGuild().getTextChannelById(value);
             if(textChannel != null
-                    && PermissionUtil.checkPermission(textChannel, e.getMember(), Permission.MESSAGE_WRITE)
+                    && PermissionUtil.checkPermission(textChannel, event.getMember(), Permission.MESSAGE_WRITE)
                     && !data.getChannelReceivers().contains(textChannel.getId())) {
                 data.getChannelReceivers().add(textChannel.getId());
             }

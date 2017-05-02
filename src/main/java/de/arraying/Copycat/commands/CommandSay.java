@@ -7,6 +7,10 @@ import de.arraying.Copycat.data.DataSayValues;
 import de.arraying.Copycat.parameters.Parameter;
 import de.arraying.Copycat.utils.Utils;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.PermissionUtil;
 
@@ -34,6 +38,10 @@ public class CommandSay extends Command {
 
     /**
      * Readies the say command.
+     * The say command repeats the given phrase, however
+     * there are many parameters to choose from, enabling it
+     * to hook into bots and execute tasks that are not yet
+     * possible with other bots.
      */
     public CommandSay() {
         super("say", "command.say.description", Permission.MESSAGE_WRITE, "say <input>", false);
@@ -41,58 +49,76 @@ public class CommandSay extends Command {
         utils = Utils.getInstance();
     }
 
+    /**
+     * Invokes the say command. First, it handles general placeholders,
+     * then it handles the input, then it sends it to the utils
+     * in order to be sent.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
+        Message message = event.getMessage();
+        Member member = event.getMember();
         if(args.length > 1) {
-            String input = e.getMessage().getRawContent().substring(copycat.getDataConfig().getBotPrefix().length());
-            DataSay.start(e.getMessage().getId());
-            input = input.substring(input.indexOf(" "));
+            StringBuilder inputBuilder = new StringBuilder();
+            for(int i = 1; i < args.length; i++) {
+                inputBuilder.append(args[i]).append(" ");
+            }
+            String input = inputBuilder.toString().trim();
+            DataSay.start(message.getId());
             for(Parameter parameter : copycat.getParameters()) {
                 while(input.contains(parameter.getTrigger())) {
-                    input = parameter.invoke(e, input);
+                    input = parameter.invoke(event, input);
                 }
             }
             input = input.trim().replaceAll(" +", " ");
             if(input.isEmpty()
                     || input.equalsIgnoreCase(" ")) {
-                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.say.empty")).queue();
+                channel.sendMessage(Messages.get(guild, "command.say.empty")).queue();
                 return;
             }
-            DataSayValues data = DataSay.retrieve(e.getMessage().getId());
+            DataSayValues data = DataSay.retrieve(message.getId());
             if(data.isDelete()
-                    && PermissionUtil.checkPermission(e.getChannel(), e.getGuild().getSelfMember(), Permission.MESSAGE_MANAGE)) {
-                e.getMessage().delete().queue();
+                    && PermissionUtil.checkPermission(channel, guild.getSelfMember(), Permission.MESSAGE_MANAGE)) {
+                message.delete().queue();
             }
-            final String finalInput = utils.replacePlaceholders(input, e.getMember());
+            final String finalInput = utils.replacePlaceholders(input, member);
             if(data.getDelay() != -1) {
-                copycat.getScheduler().schedule(() -> handleSend(e, data, finalInput), data.getDelay(), TimeUnit.SECONDS);
+                copycat.getScheduler().schedule(() -> handleSend(event, data, finalInput), data.getDelay(), TimeUnit.SECONDS);
             } else {
-                handleSend(e, data, finalInput);
+                handleSend(event, data, finalInput);
             }
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
+            channel.sendMessage(getSyntaxMessage(guild)).queue();
         }
     }
 
     /**
-     * Handles the message and sends it.
-     * @param e The event.
+     * Handles the message before it sending
+     * it to the utils to be sent.
+     * @param event The message event, inherited from the invoke.
      * @param input The message to send.
      */
-    private void handleSend(GuildMessageReceivedEvent e, DataSayValues data, String input) {
+    private void handleSend(GuildMessageReceivedEvent event, DataSayValues data, String input) {
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
+        Member member = event.getMember();
         if(data.getChannelReceivers().isEmpty()
                 && data.getUserReceivers().isEmpty()) {
-            if(!PermissionUtil.checkPermission(e.getChannel(), e.getMember(), Permission.MESSAGE_MENTION_EVERYONE)) {
+            if(!PermissionUtil.checkPermission(channel, member, Permission.MESSAGE_MENTION_EVERYONE)) {
                 input = utils.stripFormatting(input);
             }
-            e.getChannel().sendMessage(input).queue();
+            channel.sendMessage(input).queue();
             if(!data.isSilent()) {
-                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.say.sent")).queue();
+                channel.sendMessage(Messages.get(guild, "command.say.sent")).queue();
             }
         } else {
-            utils.sendMessages(e.getChannel(), data, e.getAuthor(), input);
+            utils.sendMessages(channel, data, member.getUser(), input);
         }
-        DataSay.complete(e.getMessage().getId());
+        DataSay.complete(event.getMessage().getId());
     }
 
 }

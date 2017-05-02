@@ -22,17 +22,23 @@ import java.util.Random;
 public class ParameterRandom extends Parameter {
 
     /**
-     * The random parameter (-r) takes the input
+     * The random parameter (--r) takes the input
      * and splits it into an array using the
      * character ";". A random string from that
      * array is then returned.
      */
     public ParameterRandom() {
-        super("-r");
+        super("--r");
     }
 
+    /**
+     * Invokes the parameter.
+     * @param event The chat event.
+     * @param input The current input.
+     * @return The string after it has been modified.
+     */
     @Override
-    public String invoke(GuildMessageReceivedEvent e, String input) {
+    public String invoke(GuildMessageReceivedEvent event, String input) {
         Random random = new Random();
         String[] parts = input.split(";");
         return parts[random.nextInt(parts.length)];

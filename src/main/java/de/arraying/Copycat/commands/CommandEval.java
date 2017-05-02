@@ -3,6 +3,8 @@ package de.arraying.Copycat.commands;
 import de.arraying.Copycat.Copycat;
 import de.arraying.Copycat.Messages;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
@@ -31,52 +33,70 @@ public class CommandEval extends Command {
     private final ScriptEngine scriptEngine;
 
     /**
-     * Readies the eval engine, using Nashorn.
+     * Readies the eval command. using an evaluation
+     * engine called Nashorn, similar to JavaScript.
+     * The eval command evaluates any given piece of
+     * code, hence making it extremely useful for
+     * debugging.
      */
     public CommandEval() {
         super("eval", "command.eval.description", Permission.MESSAGE_WRITE, "eval <code>", true);
-        getAliases().add("evaluate");
-        getAliases().add("exec");
-        getAliases().add("execute");
-        copycat = Copycat.getInstance();
-        scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+        this.getAliases().add("evaluate");
+        this.getAliases().add("exec");
+        this.getAliases().add("execute");
+        this.copycat = Copycat.getInstance();
+        this.scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
         try {
             scriptEngine.eval("var imports = new JavaImporter(java.io, java.lang, java.util, Packages.net.dv8tion.jda.core, "
                     + "Packages.net.dv8tion.jda.core.entities, Packages.net.dv8tion.jda.core.managers);");
             scriptEngine.put("copycat", copycat);
-        } catch(ScriptException e) {
-            copycat.getLogger().log(SimpleLog.Level.FATAL, "Importing caused an error.");
-            e.printStackTrace();
+        } catch(ScriptException exception) {
+            copycat.getLogger().log(SimpleLog.Level.FATAL, "Importing required libraries caused an error: "+exception.getMessage());
         }
     }
 
+    /**
+     * Invokes the eval command which will evaluate the code.
+     * @param event The message event. Contains all required objects.
+     * @param args The arguments, including the command itself.
+     */
     @Override
-    public void onCommand(GuildMessageReceivedEvent e, String[] args) {
+    public void onCommand(GuildMessageReceivedEvent event, String[] args) {
+        TextChannel channel = event.getChannel();
+        Guild guild = event.getGuild();
         if(args.length > 1) {
-            scriptEngine.put("jda", e.getJDA());
-            scriptEngine.put("e", e);
+            scriptEngine.put("jda", event.getJDA());
+            scriptEngine.put("e", event);
+            scriptEngine.put("event", event);
             Object output;
-            String input = e.getMessage().getRawContent().substring(copycat.getDataConfig().getBotPrefix().length());
-            input = input.substring(input.indexOf(" "));
+            StringBuilder inputBuilder = new StringBuilder();
+            for(int i = 1; i < args.length; i++) {
+                inputBuilder.append(args[i]).append(" ");
+            }
+            String input = inputBuilder.toString().trim();
             try {
-                output = scriptEngine.eval("(function() { with (imports) {\n" + input + "\n} })();");
-            } catch (ScriptException ex) {
-                e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.eval.error")+ex.getMessage()).queue();
+                output = scriptEngine.eval("(" +
+                            "function() { with (imports) " +
+                                "{\n" + input + "\n} " +
+                            "}" +
+                        ")();");
+            } catch(Exception exception) {
+                channel.sendMessage(Messages.get(guild, "command.eval.error")+exception.getMessage()).queue();
                 return;
             }
             String outputString;
             if(output == null) {
-                outputString = Messages.get(e.getGuild(), "command.eval.output");
+                outputString = Messages.get(guild, "command.eval.output");
             } else {
                 outputString = output.toString();
                 if(outputString.length() >= 2048) {
-                    e.getChannel().sendMessage(Messages.get(e.getGuild(), "command.eval.length")).queue();
+                    channel.sendMessage(Messages.get(guild, "command.eval.length")).queue();
                     return;
                 }
             }
-            e.getChannel().sendMessage(outputString).queue();
+            channel.sendMessage(outputString).queue();
         } else {
-            e.getChannel().sendMessage(getSyntaxMessage(e.getGuild())).queue();
+            channel.sendMessage(getSyntaxMessage(guild)).queue();
         }
     }
 
