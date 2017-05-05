@@ -77,58 +77,128 @@ class DataConfig {
 	public DataConfig() {
 	}
 
+	/**
+	 * Gets the token for the beta bot
+	 *
+	 * @return The bot's token
+	 */
 	public String getBotToken() {
 		return this.botToken;
 	}
 
+	/**
+	 * Gets the token for the bot
+	 *
+	 * @return The beta bot's token
+	 */
 	public String getBotBetaToken() {
 		return botBetaToken;
 	}
 
+	/**
+	 * Gets the author of the bot
+	 *
+	 * @return The bot's author
+	 */
 	public String getBotAuthor() {
 		return botAuthor;
 	}
 
+	/**
+	 * Gets the prefix for the bot
+	 *
+	 * @return The bot's prefix
+	 */
 	public String getBotPrefix() {
 		return botPrefix;
 	}
 
+	/**
+	 * Gets the version of the bot
+	 *
+	 * @return The bot's version
+	 */
 	public String getBotVersion() {
 		return botVersion;
 	}
 
+	/**
+	 * Gets if the bot is beta or not
+	 *
+	 * @return {@code true} if it is; otherwise {@code false}
+	 */
 	public boolean isBotBeta() {
 		return botBeta;
 	}
 
+	/**
+	 * Gets the MySQL host for the bot
+	 *
+	 * @return The bot's MySQL host
+	 */
 	public String getMySQLHost() {
 		return mySQLHost;
 	}
 
+	/**
+	 * Gets the MySQL DB for the bot
+	 *
+	 * @return The bot's DB
+	 */
 	public String getMySQLDatabase() {
 		return mySQLDatabase;
 	}
 
+	/**
+	 * Gets the <> for the bot
+	 *
+	 * @return The bot's <>
+	 */
 	public String getMySQLUsername() {
 		return mySQLUsername;
 	}
 
+	/**
+	 * Gets the MySQL password for the bot
+	 *
+	 * @return The bot's MySQL password
+	 */
 	public String getMySQLPassword() {
 		return mySQLPassword;
 	}
 
+	/**
+	 * Gets the Carbonitex key for the bot
+	 *
+	 * @return The bot's key
+	 */
 	public String getKeyCarbonitex() {
 		return keyCarbonitex;
 	}
 
+	/**
+	 * Gets the MySQL guild table for the bot
+	 *
+	 * @return The bot's table name
+	 */
 	public String getMySQLGuildsTable() {
 		return mySQLGuildsTable;
 	}
 
+	/**
+	 * Gets the Discordpw key for the bot
+	 *
+	 * @return The bot's key
+	 */
 	public String getKeyBotsDiscordPw() {
 		return keyBotsDiscordPw;
 	}
 
+	/**
+	 * Gets the DiscordBotsOrg for the bot
+	 *
+	 * @return The bot's key
+	 */
 	public String getKeyDiscordBotsOrg() {
 		return keyDiscordBotsOrg;
 	}
