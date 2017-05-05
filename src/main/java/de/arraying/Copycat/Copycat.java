@@ -52,14 +52,14 @@ public class Copycat {
 	@Getter	private HashMap<String, DataGuild> localGuilds;
 	@Getter	private HashMap<String, Integer> queue;
 	@Getter	private ArrayList<Parameter> parameters;
-	@Getter	public static SimpleLog logger;
-	@Getter	public static DataConfig dataConfig;
+	@Getter	private static SimpleLog logger;
+	@Getter	private static DataConfig dataConfig;
 	@Getter	private DataSay dataSay;
 	@Getter	private DataManager dataManager;
 	@Getter	private UtilsRequester requester;
 	@Getter	private ScheduledExecutorService scheduler;
-	@Getter	public static Gson save;
-	@Getter	public static Gson load;
+	@Getter	private static Gson save;
+	@Getter	private static Gson load;
 
 	/**
 	 * Static instance getter.
@@ -71,6 +71,42 @@ public class Copycat {
 			instance = new Copycat();
 		}
 		return instance;
+	}
+
+	/**
+	 * Static gson object for loading
+	 *
+	 * @return The object
+	 */
+	public static Gson getGsonLoad() {
+		return load;
+	}
+
+	/**
+	 * Static gson object for saving
+	 *
+	 * @return The object
+	 */
+	public static Gson getGsonSave() {
+		return save;
+	}
+
+	/**
+	 * Static logger object for logging
+	 *
+	 * @return The object
+	 */
+	public static SimpleLog getLogger() {
+		return logger;
+	}
+
+	/**
+	 * Static config object for info
+	 *
+	 * @return The object
+	 */
+	public static DataConfig getConfig() {
+		return dataConfig;
 	}
 
 	void run() {
@@ -110,7 +146,7 @@ public class Copycat {
 				System.exit(1);
 			}
 		} else {
-				dataConfig = UtilsJson.loadConfig(configFile);
+			dataConfig = UtilsJson.loadConfig(configFile);
 		}
 		logger.log(SimpleLog.Level.INFO, "Caching all the guilds...");
 		localGuilds = new HashMap<>();
