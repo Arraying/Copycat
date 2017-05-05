@@ -17,38 +17,40 @@ import lombok.Data;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public @Data class DataConfig {
+public @Data
+class DataConfig {
 
-    private final String botToken;
-    private final String botBetaToken;
-    private final String botAuthor;
-    private final String botPrefix;
-    private final String botVersion;
-    private final boolean botBeta;
-    private final String mySQLHost;
-    private final String mySQLDatabase;
-    private final String mySQLUsername;
-    private final String mySQLPassword;
-    private final String mySQLGuildsTable;
-    private final String keyCarbonitex;
-    private final String keyBotsDiscordPw;
-    private final String keyDiscordBotsOrg;
+    private String botToken;
+    private String botBetaToken;
+    private String botAuthor;
+    private String botPrefix;
+    private String botVersion;
+    private boolean botBeta;
+    private String mySQLHost;
+    private String mySQLDatabase;
+    private String mySQLUsername;
+    private String mySQLPassword;
+    private String mySQLGuildsTable;
+    private String keyCarbonitex;
+    private String keyBotsDiscordPw;
+    private String keyDiscordBotsOrg;
 
     /**
      * The local config objects file for the bot.
-     * @param botToken The token of the bot.
-     * @param botBetaToken The token of the beta bot.
-     * @param botAuthor The ID of the author of the bot.
-     * @param botPrefix The prefix the bot will use.
-     * @param botVersion The version of the bot.
-     * @param botBeta Whether or not the bot should use the beta token.
-     * @param mySQLHost The host name of the MySQL database.
-     * @param mySQLDatabase The database name of the MySQL database.
-     * @param mySQLUsername The username of the MySQL database.
-     * @param mySQLPassword The password of the MySQL database.
-     * @param mySQLGuildsTable The name of the table where guilds will be stored in.
-     * @param keyCarbonitex The Carbonitex API key.
-     * @param keyBotsDiscordPw The bots.discord.pw API key.
+     *
+     * @param botToken          The token of the bot.
+     * @param botBetaToken      The token of the beta bot.
+     * @param botAuthor         The ID of the author of the bot.
+     * @param botPrefix         The prefix the bot will use.
+     * @param botVersion        The version of the bot.
+     * @param botBeta           Whether or not the bot should use the beta token.
+     * @param mySQLHost         The host name of the MySQL database.
+     * @param mySQLDatabase     The database name of the MySQL database.
+     * @param mySQLUsername     The username of the MySQL database.
+     * @param mySQLPassword     The password of the MySQL database.
+     * @param mySQLGuildsTable  The name of the table where guilds will be stored in.
+     * @param keyCarbonitex     The Carbonitex API key.
+     * @param keyBotsDiscordPw  The bots.discord.pw API key.
      * @param keyDiscordBotsOrg The discordbots.org API key.
      */
     public DataConfig(String botToken, String botBetaToken, String botAuthor, String botPrefix, String botVersion, boolean botBeta,
@@ -70,4 +72,62 @@ public @Data class DataConfig {
         this.keyDiscordBotsOrg = keyDiscordBotsOrg;
     }
 
+    public DataConfig() {
+    }
+
+    public String getBotToken() {
+        return this.botToken;
+    }
+
+    public String getBotBetaToken() {
+        return botBetaToken;
+    }
+
+    public String getBotAuthor() {
+        return botAuthor;
+    }
+
+    public String getBotPrefix() {
+        return botPrefix;
+    }
+
+    public String getBotVersion() {
+        return botVersion;
+    }
+
+    public boolean isBotBeta() {
+        return botBeta;
+    }
+
+    public String getMySQLHost() {
+        return mySQLHost;
+    }
+
+    public String getMySQLDatabase() {
+        return mySQLDatabase;
+    }
+
+    public String getMySQLUsername() {
+        return mySQLUsername;
+    }
+
+    public String getMySQLPassword() {
+        return mySQLPassword;
+    }
+
+    public String getKeyCarbonitex() {
+        return keyCarbonitex;
+    }
+
+    public String getMySQLGuildsTable() {
+        return mySQLGuildsTable;
+    }
+
+    public String getKeyBotsDiscordPw() {
+        return keyBotsDiscordPw;
+    }
+
+    public String getKeyDiscordBotsOrg() {
+        return keyDiscordBotsOrg;
+    }
 }
