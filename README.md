@@ -4,6 +4,10 @@ The Copycat Discord bot.
 The Copycat Discord bot is an advanced say-bot that is designed for flexibility and the ability to hook into other bots.
 For more information please execute `copycat help` or check the wiki.
 
+### Important
+
+This code is currently poor quality. This is because most of it was rushed and not thought though appropriately. My apologies. I'm working on revamping this to be a little better though.
+
 ### License
 
 Copyright 2017 Arraying
